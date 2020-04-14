@@ -2,19 +2,7 @@
 2020《高级web》课程Project的项目前端部分代码，使用Vue/Vuex/Vue-router搭建。
 
 ## 文件目录
-* `build` webpack 相关配置文件目录
-  * `build.js` 生产环境结构代码
-  * `check-version.js` 检查 node、npm 等版本
-  * `dev-client.js` 热加载相关代码
-  * `dev-server.js` 本地服务器
-  * `utils.js` 构建工具
-  * `webpack.base.conf.js` webpack 基本配置
-  * `webpack.dev.conf.js` webpack 开发环境配置
-  * `webpack.prod.conf.js` webpack 生产环境配置
-* `config` 开发环境配置文件目录
-  * `dev.env.js` 开发环境变量
-  * `index.js` 项目基本配置
-  * `prod.env.js` 生产环境变量
+
 * `src` 源代码目录
   * `api` 封装与后台的数据交互
   * `components` 组件目录
