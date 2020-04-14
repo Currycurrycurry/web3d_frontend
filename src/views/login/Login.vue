@@ -1,10 +1,11 @@
 <template>
     <div class="login-wrap">
-        <el-form ref="form" :model="form" label-width="80px" class="login-container">
+        <el-form ref="form" :model="form" :rules="rules" label-width="80px" class="login-container">
             <h1 class="title">用户登录</h1>
             <el-form-item label="用户名">
                 <i class='el-icon-user'></i>
-                <el-input type="text" v-model="form.username" autocomplete="off"></el-input>
+                <el-input type="text" v-model="form.username" name="username" v-validate="'required|min:3|alpha'" :class="{'input': true, 'is-danger': errors.has('name') }" autocomplete="off"></el-input>
+                <span v-show="errors.has('username')" class="text-style" v-cloak> {{ errors.first('username') }} </span>
             </el-form-item>
             <el-form-item label="密码">
                 <i class='el-icon-lock'></i>
