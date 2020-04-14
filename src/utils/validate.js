@@ -8,7 +8,9 @@ Validator.addLocale(zh);
 
 // 中文错误提示的配置
 const config = {
-  locale: 'zh_CN'
+  locale: 'zh_CN',
+//   errorBagName: 'errorBags', // change if property conflicts.
+  fieldsBagName: 'fieldBags'
 };
 
 Vue.use(VeeValidate,config);
