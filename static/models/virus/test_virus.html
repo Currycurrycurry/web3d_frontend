@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8">
+    <title>Test Three.js</title>
+    <script type="text/javascript" src="./three.js"></script>
+  </head>
+
+
+  <body class="app header-fixed sidebar-fixed aside-menu-fixed aside-menu-hidden" onload="init()">
+    <canvas id="mainCanvas" width="400px" height="500px"></canvas>
+    <div id="app"></div>
+    
+  </body>
+
+
+<script src="./DDSLoader.js"></script>
+<script src="./MTLLoader.js"></script>
+<script src="./OBJLoader.js"></script>
+ 
+<script>
+// import * as THREE from "three"
+function init() {
+    var loader = new THREE.OBJMTLLoader();
+    loader.addEventListener('load', function(event) {
+        var obj = event.content;
+        mesh = obj;
+        scene.add(obj);
+    });
+    loader.load('./virus.obj', './virus.mtl');
+  
+}
+   
+</script>
+</html>
