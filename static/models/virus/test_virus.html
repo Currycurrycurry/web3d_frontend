@@ -3,7 +3,7 @@
   <head>
     <meta charset="utf-8">
     <title>Test Three.js</title>
-    <script type="text/javascript" src="./three.js"></script>
+    <script type="text/javascript" src="./lib/three.js"></script>
   </head>
 
 
@@ -13,10 +13,10 @@
     
   </body>
 
-
-<script src="./DDSLoader.js"></script>
-<script src="./MTLLoader.js"></script>
-<script src="./OBJLoader.js"></script>
+  <script src="./lib/three.js"></script>
+<script src="./lib/DDSLoader.js"></script>
+<script src="./lib/MTLLoader.js"></script>
+<script src="./lib/OBJLoader.js"></script>
  
 <script>
 // import * as THREE from "three"
@@ -27,7 +27,7 @@ function init() {
         mesh = obj;
         scene.add(obj);
     });
-    loader.load('./virus.obj', './virus.mtl');
+    loader.load('./objects/virus.obj', './objects/virus.mtl');
   
 }
    
