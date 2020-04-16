@@ -18,7 +18,6 @@
 * `package.json` npm 配置文件
 
 
-
 ## Project setup
 ```
 npm install
