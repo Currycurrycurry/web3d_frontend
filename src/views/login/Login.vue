@@ -144,7 +144,7 @@
     }
     .el-button {
         width: 80%;
-        margin-left: 10px;
+        margin-left: 5px;
         margin-top: 30px;
     }
 </style>

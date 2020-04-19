@@ -2,8 +2,11 @@
 	<div class="login clearfix">
 		<div class="login-wrap">
 			<el-row type="flex" justify="center">
-				<el-form ref="loginForm" :model="user" status-icon label-width="80px">
+				<el-form ref="registerForm" :model="user" :rules="rules" status-icon label-width="80px">
 					<h3>注册</h3>
+<!--					<el-row class="little_hint">-->
+<!--						<router-link to="/login">已有账号？登陆</router-link>-->
+<!--					</el-row>-->
 					<hr>
 					<el-form-item prop="username" label="用户名">
 						<el-input v-model="user.username" placeholder="请输入用户名"></el-input>
@@ -28,12 +31,60 @@
 	export default {
 		name: "login",
 		data() {
+			var checkUsername = (rule, value, callback) => {
+				if (!value) {
+					return callback(new Error('用户名不能为空！'));
+				}
+				setTimeout(() => {
+					if (value.length < 5) {
+						callback(new Error('用户名长度大于5！'));
+					} else {
+						callback();
+					}
+				}, 500);
+			};
+			var checkPassword = (rule, value, callback) => {
+				if (!value) {
+					return callback(new Error('密码不能为空！'));
+				} else {
+					if (value.length <= 5) {
+						callback(new Error('密码长度大于5！'));
+					} else {
+						callback();
+					}
+				}
+			};
+
+			var checkEmail = (rule, value, callback) => {
+				if (!value) {
+					return callback(new Error('邮箱不能为空！'));
+				} else {
+					var reg = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
+					if (!reg.test(this.user.email)) {
+						return callback(new Error('请输入有效的邮箱！'));
+					} else {
+						callback();
+					}
+				}
+			};
+
 			return {
 				user: {
 					username: "",
 					email: "",
 					password: ""
 				},
+				rules: {
+					username:[
+						{validator: checkUsername, trigger: 'blur'}
+					],
+					password:[
+						{validator: checkPassword, trigger: 'blur'}
+					],
+					email:[
+						{validator: checkEmail, trigger: 'blur'}
+					]
+				}
 			};
 		},
 		created() {
@@ -42,21 +93,8 @@
 		},
 		methods: {
 			doRegister() {
-				if (!this.user.username) {
-					this.$message.error("请输入用户名！");
-					return;
-				} else if (!this.user.email) {
-					this.$message.error("请输入邮箱！");
-					return;
-				} else if (this.user.email != null) {
-					var reg = /^[A-Za-z0-9\u4e00-\u9fa5]+@[a-zA-Z0-9_-]+(\.[a-zA-Z0-9_-]+)+$/;
-					if (!reg.test(this.user.email)) {
-						this.$message.error("请输入有效的邮箱！");
-					} else if (!this.user.password) {
-						this.$message.error("请输入密码！");
-						return;
-					} else {
-						// this.$router.push({ path: "/" }); //无需向后台提交数据，方便前台调试
+				this.$refs.registerForm.validate((valid) => {
+					if (valid) {
 						axios
 								.post("/register/", {
 									name: this.user.username,
@@ -64,18 +102,21 @@
 									password: this.user.password
 								})
 								.then(res => {
-									// console.log("输出response.data", res.data);
-									// console.log("输出response.data.status", res.data.status);
+									console.log("输出response.data", res.data);
+									console.log("输出response.data.status", res.data.status);
 									if (res.data.status === 200) {
 										this.$router.push({ path: "/" });
 									} else {
 										alert("您输入的用户名已存在！");
 									}
 								});
+					} else {
+						console.log('error register');
+						return false
 					}
+				});
 				}
 			}
-		}
 	};
 </script>
 
@@ -97,6 +138,9 @@
 		overflow: hidden;
 		padding-top: 10px;
 		line-height: 20px;
+	}
+	.little_hint {
+		float: right;
 	}
 
 	h3 {
