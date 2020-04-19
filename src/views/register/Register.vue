@@ -5,7 +5,7 @@
 				<el-form ref="registerForm" :model="user" :rules="rules" status-icon label-width="80px">
 					<h3>注册</h3>
 <!--					<el-row class="little_hint">-->
-<!--						<router-link to="/login">已有账号？登陆</router-link>-->
+						<router-link to="/login">已有账号？登陆</router-link>
 <!--					</el-row>-->
 					<hr>
 					<el-form-item prop="username" label="用户名">
@@ -17,6 +17,14 @@
 					<el-form-item prop="password" label="设置密码">
 						<el-input v-model="user.password" show-password placeholder="请输入密码"></el-input>
 					</el-form-item>
+					<el-form-item prop="authority" label="角色">
+						<el-select v-model="user.authority" placeholder="角色">
+							<el-option label="老师" value="teacher"></el-option>
+							<el-option label="学生" value="student"></el-option>
+						</el-select>
+					</el-form-item>
+
+
 					<el-form-item>
 						<el-button type="primary" icon @click="doRegister()">注册账号</el-button>
 					</el-form-item>
@@ -27,9 +35,9 @@
 </template>
 
 <script>
-	import axios from "axios";
+	import api from '../../api';
 	export default {
-		name: "login",
+		name: "Register",
 		data() {
 			var checkUsername = (rule, value, callback) => {
 				if (!value) {
@@ -72,7 +80,8 @@
 				user: {
 					username: "",
 					email: "",
-					password: ""
+					password: "",
+					authority: "student",
 				},
 				rules: {
 					username:[
@@ -95,21 +104,14 @@
 			doRegister() {
 				this.$refs.registerForm.validate((valid) => {
 					if (valid) {
-						axios
-								.post("/register/", {
-									name: this.user.username,
-									email: this.user.email,
-									password: this.user.password
-								})
-								.then(res => {
-									console.log("输出response.data", res.data);
-									console.log("输出response.data.status", res.data.status);
-									if (res.data.status === 200) {
-										this.$router.push({ path: "/" });
-									} else {
-										alert("您输入的用户名已存在！");
-									}
-								});
+						api.register(this.user).then(response => {
+							console.log("register");
+							if (response.status === 200) {
+								console.log('success');
+							}
+						}).catch(error => {
+							console.log('this is error: ' + error.response);
+						})
 					} else {
 						console.log('error register');
 						return false
@@ -124,7 +126,7 @@
 <style scoped>
 	.login {
 		width: 100%;
-		height: 740px;
+		height: 850px;
 		/*background: url("../assets/images/bg1.png") no-repeat;*/
 		background-size: cover;
 		overflow: hidden;
@@ -133,7 +135,7 @@
 		/*background: url("../assets/images/login_bg.png") no-repeat;*/
 		background-size: cover;
 		width: 400px;
-		height: 350px;
+		height: 450px;
 		margin: 215px auto;
 		overflow: hidden;
 		padding-top: 10px;

@@ -12,7 +12,7 @@
                         <el-input v-model="form.password" show-password placeholder="请输入密码"></el-input>
                     </el-form-item>
 <!--                    <router-link to="/">找回密码</router-link>-->
-<!--                    <router-link to="/register">没有账号？注册</router-link>-->
+                    <router-link to="/register">没有账号？注册</router-link>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-upload" @click="doLogin()">登 录</el-button>
                     </el-form-item>
@@ -24,7 +24,8 @@
 </template>
 
 <script>
-    import axios from "axios";
+    // import axios from "axios";
+    import api from '../../api'
     export default {
         name: "login",
         data() {
@@ -68,37 +69,51 @@
         created() {},
         methods: {
             doLogin() {
-                // if (!this.user.username) {
-                //     this.$message.error("请输入用户名！");
-                //     return;
-                // } else if (!this.user.password) {
-                //     this.$message.error("请输入密码！");
-                //     return;
-                // } else {
-                    //校验用户名和密码是否正确;
-                    // this.$router.push({ path: "/personal" });
                 this.$refs.loginForm.validate((valid) => {
                     if (valid) {
-                        // submit
-                        axios
-                            .post("/login/", {
-                                name: this.form.username,
-                                password: this.form.password
-                            })
-                            .then(res => {
-                                console.log("输出response.data.status", res.data.status);
-                                if (res.data.status === 200) {
-                                    this.$router.push({ path: "/personal" });
-                                } else {
-                                    alert("您输入的用户名或密码错误！");
-                                }
-                            });
+                        api.login(this.form).then(response => {
+                            console.log("logging in...")
+                            if (response.status === 200) {
+                                console.log('success');
+                                // router.push({ path: '/hall' })
+                            }
+                        }).catch(error => {
+                            console.log('this is error: ' + error.response)
+                            if (error.response.data.message === 'user does not exist' || error.response.data.code === 404) {
+                                this.$message.error('用户名不存在!')
+                            } else if (error.response.data.message === 'password is incorrect' || error.response.data.code === 403) {
+                                this.$message.error('密码不正确!')
+                            } else {
+                                console.log('problems...');
+                            }
+                        });
                     } else {
                         console.log('error submit');
-                        return false;
+                        // return false;
                     }
-                });
 
+                    // submit
+                    //         axios
+                    //             .post("/login/", {
+                    //                 name: this.form.username,
+                    //                 password: this.form.password
+                    //             })
+                    //             .then(res => {
+                    //                 console.log("输出response.data.status", res.data.status);
+                    //                 if (res.data.status === 200) {
+                    //                     this.$router.push({ path: "/personal" });
+                    //                 } else {
+                    //                     alert("您输入的用户名或密码错误！");
+                    //                 }
+                    //             });
+                    //     } else {
+                    //         console.log('error submit');
+                    //         return false;
+                    //     }
+                    // });
+
+
+                });
             }
         }
     };

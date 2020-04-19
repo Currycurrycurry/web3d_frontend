@@ -1,23 +1,24 @@
 <template>
-  <div id="app">
-    <img alt="Vue logo" src="../static/images/logo/logo.png">
-    <Login/>
-    <Register/>
-    <Information/>
-    <Header/>
+<!--  <div id="app">-->
+<!--    <img alt="Vue logo" src="../static/images/logo/logo.png">-->
+<!--    <Login/>-->
+<!--    <Register/>-->
+<!--    <Information/>-->
+<!--    <Header/>-->
 <!--    <NavMenu/>-->
 <!--    <Page404/>-->
 <!--    <Page500/>-->
 <!--    <Records/>-->
 <!--    <Footer/>-->
+  <router-view></router-view>
+<!--  </div>-->
 
-  </div>
 </template>
 
 <script>
-import Login from './views/login/Login.vue'
-import Register from "./views/register/Register";
-import Information from "./views/personnel/Information";
+// import Login from './views/login/Login.vue'
+// import Register from "./views/register/Register";
+// import Information from "./views/personnel/Information";
 // import Header from './components/Header';
 // import NavMenu from "./components/NavMenu";
 // import Page404 from "./views/ErrorPages/404";
@@ -27,11 +28,11 @@ import Information from "./views/personnel/Information";
 
 export default {
   name: 'App',
-  components: {
-    // Page404,Page500,
-    Register, Login, Information,
-    // Header, NavMenu, Records, Footer
-  }
+  // components: {
+  //   // Page404,Page500,
+  //   Register, Login, Information,
+  //   // Header, NavMenu, Records, Footer
+  // }
 }
 </script>
 

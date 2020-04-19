@@ -91,16 +91,9 @@
             <el-button v-show="!edit" type="primary" icon @click="startEdit()">编辑信息</el-button>
         </el-row>
     </div>
-
-
-
-
 </template>
 
 <script>
-    // 上传头像 增删改查个人信息(下午再写。。)
-    // 用户名设置为不可修改
-    // 性别 真实姓名
     // import axios from "axios";
     // import api from '../../api'
     export default {

@@ -1,8 +1,16 @@
 import Vue from 'vue'
 import Router from 'vue-router'
 
-// Test
-import Login from '@/views/login/Login'
+import Container from "../components/Container";
+
+import Page404 from "../views/ErrorPages/404";
+import Page500 from '../views/ErrorPages/500';
+import Records from "../views/personnel/Records";
+import Login from '../views/login/Login.vue'
+import Register from "../views/register/Register";
+import Information from "../views/personnel/Information";
+import Models from "../views/Models";
+import KnowledgeList from "../views/personnel/KnowledgeList";
 
 Vue.use(Router)
 
@@ -12,18 +20,62 @@ export default new Router({
     scrollBehavior: () => ({y: 0}),
     routes: [
         {
-            path:'/login',
+            path: '/',
+            redirect: '/home',
+            name: 'Home',
+            component: Container,
+            children: [
+                {
+                    path: 'models',
+                    name: 'models',
+                    component: Models
+                },
+                {
+                    path: 'information',
+                    name: 'Information',
+                    component: Information
+                },
+                {
+                    path: 'records',
+                    name: 'Records',
+                    component: Records
+                },
+                {
+                    path: 'knowledgeList',
+                    name: 'knowledgeList',
+                    component: KnowledgeList
+                }
+            ]
+        },
+        {
+            path: '/pages',
+            redirect: '/pages/404',
+            name: 'Pages',
             component: {
                 render (c) { return c('router-view') }
             },
             children: [
                 {
+                    path: '404',
+                    name: 'Page404',
+                    component: Page404
+                },
+                {
+                    path: '500',
+                    name: 'Page500',
+                    component: Page500
+                },
+                {
                     path: 'login',
                     name: 'Login',
                     component: Login
+                },
+                {
+                    path: 'register',
+                    name: 'Register',
+                    component: Register
                 }
-            ]  
+            ]
         }
     ]
-
 })
