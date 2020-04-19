@@ -20,7 +20,25 @@ function login (parmas) {
     return post('/api/user/login', parmas)
 }
 
+function logout(params) {
+    return post('/api/user/logout', params)
+}
+
+function modify(params) {
+    return post('/api/user/info', params)
+}
+
+function getUserInfo(params) {
+    return get('/api/user/info', params)
+}
+
+function uploadAvatar(params) {
+    return post('/api/user/setProfilePhoto', params)
+}
+
+
+
 export default {
-    login,
+    login,modify,logout, getUserInfo, uploadAvatar
 }
 
