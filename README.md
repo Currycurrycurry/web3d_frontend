@@ -17,6 +17,9 @@
 * `index.html` 入口文件
 * `package.json` npm 配置文件
 
+## views说明
+
+### Hall 游戏大厅：用户点击可以开始游戏
 
 ## Project setup
 ```

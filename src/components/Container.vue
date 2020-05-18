@@ -14,6 +14,10 @@
             <router-view></router-view>
         </el-container>
 
+        <el-container>
+            <Footer/>
+        </el-container>
+
     </div>
 </template>
 
@@ -21,10 +25,29 @@
     import Aside from "./Aside";
     import Header from "./Header";
     import NavMenu from "./NavMenu";
+    import Top from "./Top"
+    import Footer from "./Footer";
     export default {
         name: "Container",
-        components: {NavMenu, Header, Aside}
+        components: {Footer, NavMenu, Header, Aside, Top},
+        computed: {
+            name() {
+                return this.$route.name
+            },
+            list() {
+                return this.$route.matched
+            }
+        },
+        methods: {
+            error(message) {
+                this.$message.error(message)
+            },
+            success(message) {
+                this.$message.success(message)
+            }
+        }
     }
+
 </script>
 
 <style scoped>

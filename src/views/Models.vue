@@ -1,14 +1,22 @@
 <template>
-    <model-three :backgroundAlpha="0" :src="model"></model-three>
+<!--    @on-load="onLoad"-->
+<!--    <model-three :backgroundAlpha="0" :src="model"></model-three>-->
+    <model-obj :backgroundAlpha="0" :src="publicPath"></model-obj>
+
 </template>
 
 <script>
-    import { ModelThree } from 'vue-3d-model'
+    import { ModelObj } from 'vue-3d-model'
     import { mapGetters } from 'vuex'
 
     export default {
         name: 'Models',
-        components: { ModelThree },
+        components: { ModelObj },
+        data() {
+            return {
+                publicPath: process.env.BASE_URL + 'models/cells/Cells.obj'
+            }
+        },
         computed: {
             ...mapGetters([
                 'model'

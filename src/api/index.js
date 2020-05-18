@@ -16,6 +16,10 @@ function get (url, params) {
     return axios.get(url, params)
 }
 
+function getNoArgs(url) {
+    return axios.get(url)
+}
+
 function login (parmas) {
     return post('/login', parmas)
 }
@@ -29,20 +33,23 @@ function register(params) {
 }
 
 function modify(params) {
-    return post('/user/info', params)
+    return post('/modifyInformation', params)
 }
 
 function getUserInfo(params) {
-    return get('/user/info', params)
+    return get('/getUserInfo', params)
 }
 
 function uploadAvatar(params) {
     return post('/api/user/setProfilePhoto', params)
 }
 
+function getRecords() {
+    return getNoArgs('/user/records')
+}
 
 
 export default {
-    login,modify,logout, getUserInfo, uploadAvatar, register
+    login,modify,logout, getUserInfo, uploadAvatar, register, getRecords
 }
 

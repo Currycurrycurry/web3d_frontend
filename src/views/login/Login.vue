@@ -12,7 +12,7 @@
                         <el-input v-model="form.password" show-password placeholder="请输入密码"></el-input>
                     </el-form-item>
 <!--                    <router-link to="/">找回密码</router-link>-->
-                    <router-link to="/register">没有账号？注册</router-link>
+                    <router-link :to="'/register/Register'">没有账号？注册</router-link>
                     <el-form-item>
                         <el-button type="primary" icon="el-icon-upload" @click="doLogin()">登 录</el-button>
                     </el-form-item>
@@ -75,6 +75,9 @@
                             console.log("logging in...")
                             if (response.status === 200) {
                                 console.log('success');
+                                let token = response.data.message;
+                                document.cookie = 'token=' + token;
+                                console.log('token is ' + token);
                                 // router.push({ path: '/hall' })
                             }
                         }).catch(error => {
@@ -124,12 +127,12 @@
     .login {
         width: 100%;
         height: 740px;
-        /*background: url("static/images/background/") no-repeat;*/
+        /*background: url("public/images/background/") no-repeat;*/
         background-size: cover;
         overflow: hidden;
     }
     .login-wrap {
-        /*background: url("static/images/background/") no-repeat;*/
+        /*background: url("public/images/background/") no-repeat;*/
         background-size: cover;
         width: 400px;
         height: 300px;
@@ -160,6 +163,6 @@
     .el-button {
         width: 80%;
         margin-left: 5px;
-        margin-top: 30px;
+        /*margin-top: 30px;*/
     }
 </style>

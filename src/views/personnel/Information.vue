@@ -10,14 +10,14 @@
         <el-row>
             <el-col :span="4" ><div class="grid-content hint" >用户名</div></el-col>
             <el-col :span="8">
-                <div class="grid-content editable" >{{information_data.username}}</div>
+                <div class="grid-content editable" >{{username}}</div>
             </el-col>
 
             <el-col :span="4"><div class="grid-content hint">地区</div></el-col>
             <el-col :span="8">
-                <div class="grid-content editable" v-show="!edit">{{information_data.region}}</div>
+                <div class="grid-content editable" v-show="!edit">{{region}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-select  class='input_len' v-model="information_data.region" placeholder="请选择所处区域">
+                    <el-select  class='input_len' v-model="region" placeholder="请选择所处区域">
                         <el-option label="上海" value="shanghai"></el-option>
                         <el-option label="北京" value="beijing"></el-option>
                     </el-select>
@@ -38,9 +38,9 @@
             </el-col>
             <el-col :span="4"><div class="grid-content hint">性别</div></el-col>
             <el-col :span="8">
-                <div class="grid-content editable" v-show="!edit">{{information_data.gender}}</div>
+                <div class="grid-content editable" v-show="!edit">{{gender}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-select class='input_len' v-model="information_data.gender" placeholder="请选择性别">
+                    <el-select class='input_len' v-model="gender" placeholder="请选择性别">
                         <el-option label="男" value="male"></el-option>
                         <el-option label="女" value="female"></el-option>
                     </el-select>
@@ -50,17 +50,17 @@
         <el-row>
             <el-col :span="4"><div class="grid-content hint">全名</div></el-col>
             <el-col :span="8">
-                <div class="grid-content editable" v-show="!edit">{{information_data.fullName}}</div>
+                <div class="grid-content editable" v-show="!edit">{{fullName}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-input class='input_len' v-model="information_data.fullName" placeholder="请输入全名"></el-input>
+                    <el-input class='input_len' v-model="fullName" placeholder="请输入全名"></el-input>
 <!--                    <el-button type="primary" icon @click="saveFullname()">保存</el-button>-->
                 </div>
             </el-col>
             <el-col :span="4"><div class="grid-content hint">邮箱</div></el-col>
             <el-col :span="8">
-                <div class="grid-content editable" v-show="!edit">{{information_data.email}}</div>
+                <div class="grid-content editable" v-show="!edit">{{email}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-input v-model="information_data.email" placeholder="请输入邮箱" class="input_len"></el-input>
+                    <el-input v-model="email" placeholder="请输入邮箱" class="input_len"></el-input>
 <!--                    <el-button type="primary" icon @click="saveEmail()">保存</el-button>-->
                 </div>
             </el-col>
@@ -68,9 +68,9 @@
         <el-row>
             <el-col :span="4"><div class="grid-content hint">年龄</div></el-col>
             <el-col :span="8">
-                <div class="grid-content editable" v-show="!edit">{{information_data.age}}</div>
+                <div class="grid-content editable" v-show="!edit">{{age}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-input class='input_len' type="age" v-model.number="information_data.age" autocomplete="off"></el-input>
+                    <el-input class='input_len' type="age" v-model.number="age" autocomplete="off"></el-input>
 <!--                    <el-button type="primary" icon @click="savePassword()">保存</el-button>-->
                 </div>
             </el-col>
@@ -95,7 +95,9 @@
 
 <script>
     // import axios from "axios";
-    // import api from '../../api'
+    import api from '../../api'
+    import { mapGetters } from 'vuex'
+    // import store from '../../store/store'
     export default {
         name: "Information",
         data() {
@@ -140,13 +142,13 @@
                 upload:'/',
                 imageUrl: '',
                 information_data: {
-                    username: 'huangjiani',
-                    region: '上海',
+                    // username: user,
+                    // region: '上海',
                     password: '*****',
-                    gender: '女',
-                    fullName: '黄佳妮',
-                    email: '17302010063@fudan.edu.cn',
-                    age: '21',
+                    // gender: '女',
+                    // fullName: '黄佳妮',
+                    // email: '17302010063@fudan.edu.cn',
+                    // age: '21',
                     originPassword: '',
                     newPassword: '',
 
@@ -166,32 +168,45 @@
                     fullName:[
                         {validator: checkFullName, trigger: 'blur'}
                     ]
-                }
+                },
+
             };
         },
+        computed: {
+            ...mapGetters([
+                'username',
+                'avatar',
+                'email',
+                'region',
+                'gender',
+                'fullName',
+                'age'
+            ])
+
+        },
         methods: {
-            // upLoad(file) {
-            //     const formData = new FormData();
-            //     formData.append('file', file.file);
-            //     console.log(file);
-            //     // this.$http.uploadHttp('/', formData).then((res) => {
-            //     //     console.log(res);
-            //     //     console.log('上传成功');
-            //     //     if (res.data.code === 0) {
-            //     //         this.successUrl = res.data.response; // 请求之后将返回的URL给修改的接口在进行一次修改请求
-            //     //         this.headUrl = res.data.response; // 请求成功之后赋给头像的URL
-            //     //         this.$message('头像上传成功');
-            //     //         this.$store.dispatch('person/setAvatar', this.successUrl);
-            //     //         const obj = {
-            //     //             headUrl: this.successUrl
-            //     //         };
-            //     //         this.edit(obj);
-            //     //         // this.getAccount();
-            //     //     } else {
-            //     //         this.$message('头像上传失败');
-            //     //     }
-            //     // });
-            // },
+            upLoad(file) {
+                const formData = new FormData();
+                formData.append('file', file.file);
+                console.log(file);
+                // this.$http.uploadHttp('/', formData).then((res) => {
+                //     console.log(res);
+                //     console.log('上传成功');
+                //     if (res.data.code === 0) {
+                //         this.successUrl = res.data.response; // 请求之后将返回的URL给修改的接口在进行一次修改请求
+                //         this.headUrl = res.data.response; // 请求成功之后赋给头像的URL
+                //         this.$message('头像上传成功');
+                //         this.$store.dispatch('person/setAvatar', this.successUrl);
+                //         const obj = {
+                //             headUrl: this.successUrl
+                //         };
+                //         this.edit(obj);
+                //         // this.getAccount();
+                //     } else {
+                //         this.$message('头像上传失败');
+                //     }
+                // });
+            },
             handleAvatarSuccess(res, file) {
                 console.log('enter');
                 this.imageUrl = URL.createObjectURL(file.raw);
@@ -211,26 +226,28 @@
             },
             modify() {
                 console.log("modify the user info...");
-                // api.modify({
-                //     originPassword: this.originPassword,
-                //     newPassword: this.newPassword,
-                //     fullName: this.fullName,
-                //     age: this.age,
-                //     region: this.region,
-                //     gender: this.gender,
-                //     email: this.email,
-                // }).then(response => {
-                //     if (response.status === 200) {
-                //         this.edit = false;
-                //         this.$message.success("modify successfully");
-                //     }
-                // }).catch(error => {
-                //     // TODO
-                //     if (error.response.data.code === '') {
-                //         this.$message.error("");
-                //     }
-                //
-                // });
+                api.modify({
+                    originPassword: this.originPassword,
+                    newPassword: this.newPassword,
+                    fullName: this.fullName,
+                    age: this.age,
+                    region: this.region,
+                    gender: this.gender,
+                    email: this.email,
+                }).then(response => {
+                    console.log('modifying...')
+                    if (response.status === 200) {
+                        this.edit = false;
+                        this.$message.success("modify successfully");
+                    }
+                }).catch(error => {
+                    // TODO
+                    this.$message.error("error");
+                    if (error.response.data.code === '') {
+                        this.$message.error("");
+                    }
+
+                });
                 this.edit = false;
             },
             startEdit() {

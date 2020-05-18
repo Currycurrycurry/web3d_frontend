@@ -1,10 +1,10 @@
 <template>
-    <img alt="Vue logo" src="../../public/images/logo/logo.png">
+    
 </template>
 
 <script>
     export default {
-        name: "Top"
+        name: "UserInfos"
     }
 </script>
 

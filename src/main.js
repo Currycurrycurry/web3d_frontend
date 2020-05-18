@@ -4,10 +4,10 @@ import 'element-ui/lib/theme-chalk/index.css'
 import App from './App.vue'
 // import VueResource from 'vue-resource'
 // 引入表单验证
-import './utils/validate.js'
+// import './utils/validate.js'
 // import Login from './views/login/Login'
 import router from './router'
-import store from './store'
+import store from './store/store'
 
 
 Vue.config.productionTip = false
