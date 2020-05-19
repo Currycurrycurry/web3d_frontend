@@ -4,24 +4,23 @@ import api from '../../api'
 
 const user = {
     state: {
+        user_id: '-1',
         token: Cookies.get('token'),
-        username: '', // username
-        avatar: 'public/images/avatar/django.svg', //headProfilePath
-        email: '',
-        fullName: '',
-        age: '',
-        gender: '',
-        authority: '',
+        username: '',
+        email: 'jokernini@qq.com',
+        fullName: 'curry',
+        age: '20',
+        gender: '女',
         model: 'none',
-        region: ''
+        region: '上海'
     },
 
     mutations: {
+        SET_USER_ID: (state, user_id) => {
+            state.user_id = user_id
+        },
         SET_USERNAME: (state, username) => {
             state.username = username
-        },
-        SET_AVATAR: (state, avatar_url) => {
-            state.avatar = avatar_url
         },
         SET_MODEL: (state, model_url) => {
             state.model = model_url
@@ -41,9 +40,6 @@ const user = {
         SET_AGE: (state, age) => {
             state.age = age
         },
-        SET_AUTHORITY: (state, authority) => {
-            state.authority = authority
-        },
         LOGIN_SUCCESS: () => {
             console.log('login success')
         },
@@ -55,15 +51,14 @@ const user = {
         setUserInfo ({commit}) {
             return new Promise((resolve, reject) => {
                 api.getUserInfo().then(response => {
+                    commit('SET_USER_ID', response.data.content['id'])
                     commit('SET_USERNAME', response.data.content['username'])
-                    commit('SET_AVATAR', response.data.content['headProfilePath'])
-                    commit('SET_MODEL', response.data.content['modelPath'])
+                    commit('SET_MODEL', response.data.content['model_id']) // TODO
                     commit('SET_EMAIL', response.data.content['email'])
                     commit('SET_REGION', response.data.content['region'])
                     commit('SET_GENDER', response.data.content['gender'])
                     commit('SET_FULLNAME', response.data.content['fullname'])
                     commit('SET_AGE', response.data.content['age'])
-
                     resolve(response)
                 }).catch(error => {
                     console.log(error.response)

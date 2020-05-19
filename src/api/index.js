@@ -48,8 +48,19 @@ function getRecords() {
     return getNoArgs('/user/records')
 }
 
+// TODO get or post
+function findUserById(params) {
+    return get('/findUserById', params)
+}
 
 export default {
-    login,modify,logout, getUserInfo, uploadAvatar, register, getRecords
+    login,
+    modify,
+    logout,
+    getUserInfo,
+    uploadAvatar,
+    register,
+    getRecords,
+    findUserById
 }
 

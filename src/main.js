@@ -2,20 +2,20 @@ import Vue from 'vue'
 import ElementUI from 'element-ui'
 import 'element-ui/lib/theme-chalk/index.css' 
 import App from './App.vue'
-// import VueResource from 'vue-resource'
-// 引入表单验证
-// import './utils/validate.js'
 // import Login from './views/login/Login'
 import router from './router'
 import store from './store/store'
-
+import axios from 'axios'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
 
-const whiteList = ['/pages/Login', '/pages/Register', '/pages/Page404', '/pages/Page500']
+const whiteList = ['/login/Login', '/register/Register', '/ErrorPages/Page404', '/ErrorPages/Page500']
 router.beforeEach((to, from, next) => {
+  console.log('enter into the router...')
+  console.log('getter is ' + JSON.stringify(store.getters))
   if (store.getters.user_id !== '-1') { // 判断是否有token
+    console.log('hello' + store.getters.user_id);
     if (whiteList.indexOf(to.path) !== -1) {
       next('hall')
     }
@@ -38,6 +38,7 @@ router.beforeEach((to, from, next) => {
      }
      */
   } else {
+    console.log('hello!')
     if (whiteList.indexOf(to.path) !== -1) {
       next()
     } else {
@@ -46,18 +47,52 @@ router.beforeEach((to, from, next) => {
           console.log('here')
           next()
         } else {
-          next('/pages/Login')
+          next('/login/Login')
         }
       }).catch(() => {
-        next('/pages/Login')
+        next('/login/Login')
       })
     }
   }
 })
 
+axios.interceptors.request.use(
+    config => {
+      if (store.getters.token) {
+        config.headers.Authorization = 'token ${store.getters.token}';
+      }
+      return config;
+    },
+    err => {
+      return Promise.reject(err);
+    });
+
+axios.interceptors.response.use(
+    response => {
+      return response;
+    },
+    error => {
+      if (error.response) {
+        console.log('axios:' + error.response.status);
+        switch (error.response.status) {
+          case 403:
+            router.replace({
+              path: '/Login/login',
+              query: {redirect: router.currentRoute.fullPath}
+            });
+        }
+      }
+      return Promise.reject(error.response.data);
+    }
+);
+
+Vue.prototype.$http = axios;
+
+
 new Vue({
   render: h => h(App),
   router,
+  store,
 }).$mount('#app')
 
 // new Vue({
