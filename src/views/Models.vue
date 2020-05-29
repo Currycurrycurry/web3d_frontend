@@ -6,15 +6,15 @@
 </template>
 
 <script>
-    import { ModelObj } from 'vue-3d-model'
-    import { mapGetters } from 'vuex'
+    import {ModelObj} from 'vue-3d-model'
+    import {mapGetters} from 'vuex'
 
     export default {
         name: 'Models',
-        components: { ModelObj },
+        components: {ModelObj},
         data() {
             return {
-                publicPath: process.env.BASE_URL + 'models/cells/Cells.obj'
+                publicPath: process.env.BASE_URL + 'models/cells/Cells.obj' // TODO 模型压缩 根据用户id获取对应model
             }
         },
         computed: {

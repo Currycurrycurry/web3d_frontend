@@ -1,5 +1,7 @@
 <template>
-    
+    <div>
+        gaming...
+    </div>
 </template>
 
 <script>

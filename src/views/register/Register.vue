@@ -4,9 +4,7 @@
 			<el-row type="flex" justify="center">
 				<el-form ref="registerForm" :model="user" :rules="rules" status-icon label-width="80px">
 					<h3>注册</h3>
-<!--					<el-row class="little_hint">-->
 						<router-link to="/login">已有账号？登陆</router-link>
-<!--					</el-row>-->
 					<hr>
 					<el-form-item prop="username" label="用户名">
 						<el-input v-model="user.username" placeholder="请输入用户名"></el-input>
@@ -17,13 +15,14 @@
 					<el-form-item prop="password" label="设置密码">
 						<el-input v-model="user.password" show-password placeholder="请输入密码"></el-input>
 					</el-form-item>
-					<el-form-item prop="authority" label="角色">
-						<el-select v-model="user.authority" placeholder="角色">
-							<el-option label="老师" value="teacher"></el-option>
-							<el-option label="学生" value="student"></el-option>
+					<el-form-item label="角色" prop="model">
+						<el-select placeholder="角色" v-model="user.modelId">
+							<el-option label="红细胞" value="0"></el-option>
+							<el-option label="普通细胞" value="1"></el-option>
+							<el-option label="神经元细胞" value="2"></el-option>
+							<el-option label="karamendos细胞" value="3"></el-option>
 						</el-select>
 					</el-form-item>
-
 
 					<el-form-item>
 						<el-button type="primary" icon @click="doRegister()">注册账号</el-button>
@@ -36,6 +35,9 @@
 
 <script>
 	import api from '../../api';
+	import store from "../../store/store";
+	import router from "../../router";
+
 	export default {
 		name: "Register",
 		data() {
@@ -81,7 +83,7 @@
 					username: "",
 					email: "",
 					password: "",
-					authority: "student",
+					modelId: "",
 				},
 				rules: {
 					username:[
@@ -102,18 +104,54 @@
 		},
 		methods: {
 			doRegister() {
+				console.log('user is ' + this.user)
 				this.$refs.registerForm.validate((valid) => {
+					console.log('user is ' + this.user)
+					console.log('user is ' + JSON.stringify(this.user));
 					if (valid) {
 						api.register(this.user).then(response => {
 							console.log("register");
+							console.log(response)
 							if (response.status === 200) {
-								console.log('success');
+								let code = response.data.code;
+								let msg = response.data.message;
+								if (code === 200) {
+									console.log('success');
+									this.$message.success("注册成功");
+									let token = response.data.message;
+									document.cookie = 'token=' + token;
+									console.log('token is ' + token);
+									store.dispatch('setUserInfo')
+									router.push({path: '/hall'})
+								} else if (code === 400) {
+									if (msg === "user has exist") {
+										this.$message.error("用户名已存在");
+									} else if (msg === "username should be filled") {
+										this.$message.error("用户名为必填项");
+									} else if (msg === "password should be filled") {
+										this.$message.error("密码为必填项");
+									} else if (msg === "invalid email") {
+										this.$message.error("邮箱参数非法");
+									} else {
+										this.$message.error("参数异常");
+									}
+								}
 							}
 						}).catch(error => {
 							console.log('this is error: ' + error.response);
+							if (error.message === 'user has exist') {
+								this.$message.error("用户名已存在");
+							} else if (error.message === "username should be filled") {
+								this.$message.error("用户名为必填项");
+							} else if (error.message === "password should be filled") {
+								this.$message.error("密码为必填项");
+							}
+							console.log(error.message)
+							this.$message.error("注册失败");
 						})
 					} else {
 						console.log('error register');
+						this.$message.error("非法参数");
 						return false
 					}
 				});

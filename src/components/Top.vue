@@ -1,5 +1,5 @@
 <template>
-    <img alt="Vue logo" src="../../public/images/logo/logo.png">
+    <img alt="Vue logo" height="140px" src="../../public/images/logo/icon.png" width="100%">
 </template>
 
 <script>

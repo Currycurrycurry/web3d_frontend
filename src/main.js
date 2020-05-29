@@ -1,71 +1,71 @@
 import Vue from 'vue'
 import ElementUI from 'element-ui'
-import 'element-ui/lib/theme-chalk/index.css' 
+import 'element-ui/lib/theme-chalk/index.css'
 import App from './App.vue'
-// import Login from './views/login/Login'
 import router from './router'
 import store from './store/store'
 import axios from 'axios'
+import Cookies from 'js-cookie'
+// 引入echarts
+import echarts from 'echarts'
+import 'echarts/theme/westeros'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
 
-const whiteList = ['/login/Login', '/register/Register', '/ErrorPages/Page404', '/ErrorPages/Page500']
+// const whiteList = ['/pages/Login', '/pages/Register', '/pages/Page404', '/pages/Page500']
 router.beforeEach((to, from, next) => {
-  console.log('enter into the router...')
-  console.log('getter is ' + JSON.stringify(store.getters))
-  if (store.getters.user_id !== '-1') { // 判断是否有token
-    console.log('hello' + store.getters.user_id);
-    if (whiteList.indexOf(to.path) !== -1) {
-      next('hall')
-    }
+  // console.log('enter into the router...')
+  // console.log('to path is ' + to.path)
+  // console.log('from path is ' + from.path)
+  // console.log('getter is ' + JSON.stringify(store.getters))
+
+  if (Cookies.get('token') !== '') {
+    console.log('token is not none')
     next()
-    /*
-     if (to.path === '/login') {
-     next({ path: '/' })
-     } else {
-     if (store.getters.roles.length === 0) { // 判断当前用户是否已拉取完user_info信息
-     store.dispatch('GetInfo').then(res => { // 拉取user_info
-     const roles = res.data.role;
-     store.dispatch('GenerateRoutes', { roles }).then(() => { // 生成可访问的路由表
-     router.addRoutes(store.getters.addRouters) // 动态添加可访问路由表
-     next(to.path); // hack方法 确保addRoutes已完成
-     })
-     }).catch(err => {
-     console.log(err);
-     })
-     }
-     }
-     */
   } else {
-    console.log('hello!')
-    if (whiteList.indexOf(to.path) !== -1) {
-      next()
-    } else {
-      store.dispatch('setUserInfo').then(() => {
-        if (store.getters.user_id !== '-1') { // 在免登录白名单，直接进入
-          console.log('here')
-          next()
-        } else {
-          next('/login/Login')
-        }
-      }).catch(() => {
-        next('/login/Login')
-      })
-    }
+    next('/pages/Login')
   }
+
+  // if (store.getters.user_id !== '-1') { // 判断是否有token
+  //   console.log('hello' + store.getters.user_id);
+  //   if (whiteList.indexOf(to.path) !== -1) {
+  //     console.log('whiteList index is ' + whiteList.indexOf(to.path))
+  //     next('hall')
+  //   }
+  //   next()
+  //
+  // } else {
+  //   console.log('hello!')
+  //   if (whiteList.indexOf(to.path) !== -1) {
+  //     console.log('whiteList index is ' + whiteList.indexOf(to.path))
+  //     next()
+  //   } else {
+  //     if (Cookies.get('token') !== '') {
+  //       console.log('token is not none')
+  //       next('hall')
+  //     } else {
+  //       next('/pages/Login')
+  //     }
+  //
+  //
+  //
+  //   }
+  // }
 })
 
-axios.interceptors.request.use(
-    config => {
-      if (store.getters.token) {
-        config.headers.Authorization = 'token ${store.getters.token}';
-      }
-      return config;
-    },
-    err => {
-      return Promise.reject(err);
-    });
+
+// axios.interceptors.request.use(
+//     config => {
+//       console.log("axios interceptor works...")
+//       if (store.getters.token) {
+//         config.headers.jwt `jwt_token ${store.getters.token}`;
+//       }
+//       return config;
+//     },
+//     err => {
+//       return Promise.reject(err);
+//     });
 
 axios.interceptors.response.use(
     response => {
@@ -77,7 +77,7 @@ axios.interceptors.response.use(
         switch (error.response.status) {
           case 403:
             router.replace({
-              path: '/Login/login',
+              path: '/pages/login',
               query: {redirect: router.currentRoute.fullPath}
             });
         }
@@ -86,8 +86,9 @@ axios.interceptors.response.use(
     }
 );
 
-Vue.prototype.$http = axios;
 
+Vue.prototype.$http = axios;
+Vue.prototype.$echarts = echarts;
 
 new Vue({
   render: h => h(App),

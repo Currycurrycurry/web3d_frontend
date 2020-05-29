@@ -1,15 +1,37 @@
 <template>
-    <el-breadcrumb separator="/">
-        <el-breadcrumb-item :to="{ path: '/' }">首页</el-breadcrumb-item>
-        <el-breadcrumb-item><a href="/">游戏中心</a></el-breadcrumb-item>
-<!--        <el-breadcrumb-item>活动列表</el-breadcrumb-item>-->
-<!--        <el-breadcrumb-item>活动详情</el-breadcrumb-item>-->
-    </el-breadcrumb>
+    <el-header style="float: right;padding: 20px 10px 10px 10px;">
+        <el-dropdown>
+            <i class="el-icon-setting" style=""></i>
+            <el-dropdown-menu slot="dropdown">
+                <el-dropdown-item @click="logout()">退出登录</el-dropdown-item>
+            </el-dropdown-menu>
+        </el-dropdown>
+        <span>当前玩家：{{name}}</span>
+        <!--        <i class="el-icon-setting" style=""></i>-->
+        <!--        <span>当前游戏在线人数：3人</span>-->
+    </el-header>
+
 </template>
 
 <script>
+    // import api from '../api'
+    import router from '../router'
+    import store from '../store/store'
+
     export default {
         name: "Header",
+        data() {
+            return {
+                name: store.getters.username
+            }
+        },
+        methods: {
+            logout() {
+                console.log("log out...")
+                router.push('/page/login');
+                document.cookie = '';
+            },
+        }
 
     }
 </script>

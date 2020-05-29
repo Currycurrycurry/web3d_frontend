@@ -1,5 +1,5 @@
 import axios from 'axios'
-
+// import store from '../store/store'
 const baseURL = 'http://localhost:8080'
 
 axios.defaults.timeout = 10000
@@ -7,12 +7,20 @@ axios.defaults.baseURL = baseURL
 axios.defaults.withCredentials = true
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
 axios.defaults.headers.get['Content-Type'] = 'application/json'
+// axios.defaults.headers.post['jwt_token'] = store.getters.token // for POST requests
+console.log('in api index.js...');
+// console.log("store's token is" + store.getters.token);
+// if (store.getters.token) {
+//     axios.defaults.headers.common['jwt_token'] = store.getters.token;
+// }
 
-function post (url, params) {
+// for all requests
+
+function post(url, params) {
     return axios.post(url, params)
 }
 
-function get (url, params) {
+function get(url, params) {
     return axios.get(url, params)
 }
 
@@ -22,10 +30,6 @@ function getNoArgs(url) {
 
 function login (parmas) {
     return post('/login', parmas)
-}
-
-function logout(params) {
-    return post('/logout', params)
 }
 
 function register(params) {
@@ -53,14 +57,22 @@ function findUserById(params) {
     return get('/findUserById', params)
 }
 
+function getKnowlegeList(params) {
+    return get('/findKnowledgeByUserId', params)
+}
+
+// // admin pages
+// function get
+
+
 export default {
     login,
     modify,
-    logout,
     getUserInfo,
     uploadAvatar,
     register,
     getRecords,
-    findUserById
+    findUserById,
+    getKnowlegeList
 }
 

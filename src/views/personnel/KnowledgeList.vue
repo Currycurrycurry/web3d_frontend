@@ -45,6 +45,7 @@
 </template>
 
 <script>
+    // import api from '../../api'
     export default {
         name: "KnowledgeList",
         data() {
@@ -83,6 +84,16 @@
                     shopId: '10333'
                 }]
             }
+        },
+        mounted() {
+            this.getKnowlegeList()
+        },
+        methods: {
+            // getKnowlegeList() {
+            //     api.getKnowlegeList().then(response => {
+            //
+            //     });
+            // }
         }
 
     }

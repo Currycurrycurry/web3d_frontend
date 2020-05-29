@@ -2,7 +2,6 @@ import Vue from 'vue'
 import Router from 'vue-router'
 
 import Container from "../components/Container";
-
 import Page404 from "../views/ErrorPages/404";
 import Page500 from '../views/ErrorPages/500';
 import Records from "../views/personnel/Records";
@@ -11,6 +10,8 @@ import Register from "../views/register/Register";
 import Information from "../views/personnel/Information";
 import Models from "../views/Models";
 import KnowledgeList from "../views/personnel/KnowledgeList";
+import Hall from "../views/Hall"
+import Chatting from "../views/Chatting";
 
 Vue.use(Router)
 
@@ -21,8 +22,8 @@ export default new Router({
     routes: [
         {
             path: '/',
-            redirect: '/home',
-            name: 'Home',
+            redirect: '/hall',
+            name: 'Hall',
             component: Container,
             children: [
                 {
@@ -44,6 +45,17 @@ export default new Router({
                     path: 'knowledgeList',
                     name: 'knowledgeList',
                     component: KnowledgeList
+                },
+                {
+                    path: 'hall',
+                    name: 'Hall',
+                    component: Hall
+
+                },
+                {
+                    path: 'chatRoom',
+                    name: 'Chatting',
+                    component: Chatting
                 }
             ]
         },
@@ -75,6 +87,7 @@ export default new Router({
                     name: 'Register',
                     component: Register
                 }
+
             ]
         }
     ]

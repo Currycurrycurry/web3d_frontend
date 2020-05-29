@@ -1,5 +1,4 @@
 import Cookies from 'js-cookie'
-// import { formatDate } from '../../utils'
 import api from '../../api'
 
 const user = {
@@ -7,12 +6,12 @@ const user = {
         user_id: '-1',
         token: Cookies.get('token'),
         username: '',
-        email: 'jokernini@qq.com',
-        fullName: 'curry',
-        age: '20',
-        gender: '女',
-        model: 'none',
-        region: '上海'
+        email: '',
+        fullName: '',
+        age: '',
+        gender: '',
+        model: '',
+        region: ''
     },
 
     mutations: {
@@ -53,7 +52,7 @@ const user = {
                 api.getUserInfo().then(response => {
                     commit('SET_USER_ID', response.data.content['id'])
                     commit('SET_USERNAME', response.data.content['username'])
-                    commit('SET_MODEL', response.data.content['model_id']) // TODO
+                    commit('SET_MODEL', response.data.content['model_id'])
                     commit('SET_EMAIL', response.data.content['email'])
                     commit('SET_REGION', response.data.content['region'])
                     commit('SET_GENDER', response.data.content['gender'])
@@ -65,6 +64,9 @@ const user = {
                     reject(error)
                 })
             })
+        },
+        modify({commit}, model, email, region, gender, fullName, age) {
+            commit('MODIFY', model, email, region, gender, fullName, age)
         }
     }
 }

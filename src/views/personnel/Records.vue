@@ -40,38 +40,51 @@
 </template>
 
 <script>
+    // import api from '../../api'
     export default {
         name: "Records",
         data() {
             return {
-                recordsTable:[
-                    {
-                        gameId: '1',
-                        status: '成功',
-                        score: '12',
-                        players: 'alice, bob, curry',
-                        time: '2019-01-01 12:00'
-                    },
-                    {
-                        gameId: '2',
-                        status: '成功',
-                        score: '12',
-                        players: 'alice, bob, curry',
-                        time: '2019-01-01 12:00'
+                recordsTable: [
+                    // {
+                    //     gameId: '1',
+                    //     status: '成功',
+                    //     score: '12',
+                    //     players: 'alice, bob, curry',
+                    //     time: '2019-01-01 12:00'
+                    // },
+                    // {
+                    //     gameId: '2',
+                    //     status: '成功',
+                    //     score: '12',
+                    //     players: 'alice, bob, curry',
+                    //     time: '2019-01-01 12:00'
+                    //
+                    // },
+                    // {
+                    //     gameId: '3',
+                    //     status: '成功',
+                    //     score: '12',
+                    //     players: 'alice, bob, curry',
+                    //     time: '2019-01-01 12:00'
+                    // }
 
-                    },
-                    {
-                        gameId: '3',
-                        status: '成功',
-                        score: '12',
-                        players: 'alice, bob, curry',
-                        time: '2019-01-01 12:00'
+                ]
 
-                    }
+            }
 
-            ]
-
-        }
+        },
+        mounted() {
+            this.recordsTable = []
+        },
+        methods: {
+            // getRecords () {
+            //     api.getRecords().then(response => {
+            //         // TODO api
+            //
+            //     })
+            //
+            // }
 
         }
     }

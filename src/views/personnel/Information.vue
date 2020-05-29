@@ -17,7 +17,7 @@
             <el-col :span="8">
                 <div class="grid-content editable" v-show="!edit">{{region}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-select  class='input_len' v-model="region" placeholder="请选择所处区域">
+                    <el-select class='input_len' placeholder="请选择所处区域" v-model="information_data.Region">
                         <el-option label="上海" value="shanghai"></el-option>
                         <el-option label="北京" value="beijing"></el-option>
                     </el-select>
@@ -40,7 +40,7 @@
             <el-col :span="8">
                 <div class="grid-content editable" v-show="!edit">{{gender}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-select class='input_len' v-model="gender" placeholder="请选择性别">
+                    <el-select class='input_len' placeholder="请选择性别" v-model="information_data.Gender">
                         <el-option label="男" value="male"></el-option>
                         <el-option label="女" value="female"></el-option>
                     </el-select>
@@ -52,7 +52,7 @@
             <el-col :span="8">
                 <div class="grid-content editable" v-show="!edit">{{fullName}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-input class='input_len' v-model="fullName" placeholder="请输入全名"></el-input>
+                    <el-input class='input_len' placeholder="请输入全名" v-model="information_data.FullName"></el-input>
 <!--                    <el-button type="primary" icon @click="saveFullname()">保存</el-button>-->
                 </div>
             </el-col>
@@ -60,31 +60,49 @@
             <el-col :span="8">
                 <div class="grid-content editable" v-show="!edit">{{email}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-input v-model="email" placeholder="请输入邮箱" class="input_len"></el-input>
+                    <el-input class="input_len" placeholder="请输入邮箱" v-model="information_data.Email"></el-input>
 <!--                    <el-button type="primary" icon @click="saveEmail()">保存</el-button>-->
                 </div>
             </el-col>
         </el-row>
         <el-row>
-            <el-col :span="4"><div class="grid-content hint">年龄</div></el-col>
+            <el-col :span="4">
+                <div class="grid-content hint">年龄</div>
+            </el-col>
             <el-col :span="8">
                 <div class="grid-content editable" v-show="!edit">{{age}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-input class='input_len' type="age" v-model.number="age" autocomplete="off"></el-input>
-<!--                    <el-button type="primary" icon @click="savePassword()">保存</el-button>-->
+                    <el-input autocomplete="off" class='input_len' type="age"
+                              v-model.number="information_data.Age"></el-input>
+                    <!--                    <el-button type="primary" icon @click="savePassword()">保存</el-button>-->
                 </div>
             </el-col>
-            <el-col :span="4"><div class="grid-content hint">上传头像</div></el-col>
-            <el-col :span="8"><div class="grid-content editable"><el-upload
-                    class="avatar-uploader"
-                    :action="upload"
 
-                    :show-file-list="false"
-                    :on-success="handleAvatarSuccess"
-                    :before-upload="beforeAvatarUpload">
-                <img v-if="imageUrl" :src="imageUrl" class="avatar">
-                <i v-else class="el-icon-plus avatar-uploader-icon"></i>
-            </el-upload></div></el-col>
+            <el-col :span="4">
+                <div class="grid-content hint">形象选择</div>
+            </el-col>
+            <el-col :span="8">
+                <div class="grid-content editable" v-show="!edit">{{modelId}}</div>
+                <div class="grid-content editable" v-show="edit">
+                    <el-select class='input_len' placeholder="请选择性别" v-model="information_data.Model">
+                        <el-option label="红细胞" value="0"></el-option>
+                        <el-option label="普通细胞" value="1"></el-option>
+                        <el-option label="11细胞" value="2"></el-option>
+                        <el-option label="22普通细胞" value="3"></el-option>
+                    </el-select>
+                </div>
+            </el-col>
+            <!--            <el-col :span="4"><div class="grid-content hint">上传头像</div></el-col>-->
+            <!--            <el-col :span="8"><div class="grid-content editable"><el-upload-->
+            <!--                    class="avatar-uploader"-->
+            <!--                    :action="upload"-->
+
+            <!--                    :show-file-list="false"-->
+            <!--                    :on-success="handleAvatarSuccess"-->
+            <!--                    :before-upload="beforeAvatarUpload">-->
+            <!--                <img v-if="imageUrl" :src="imageUrl" class="avatar">-->
+            <!--                <i v-else class="el-icon-plus avatar-uploader-icon"></i>-->
+            <!--            </el-upload></div></el-col>-->
         </el-row>
         <el-row>
         <el-button v-show="edit" type="primary" icon @click="modify()">保存修改</el-button>
@@ -96,8 +114,9 @@
 <script>
     // import axios from "axios";
     import api from '../../api'
-    import { mapGetters } from 'vuex'
-    // import store from '../../store/store'
+    import {mapGetters} from 'vuex'
+    import store from '../../store/store'
+
     export default {
         name: "Information",
         data() {
@@ -142,16 +161,15 @@
                 upload:'/',
                 imageUrl: '',
                 information_data: {
-                    // username: user,
-                    // region: '上海',
+                    Region: '上海',
                     password: '*****',
-                    // gender: '女',
-                    // fullName: '黄佳妮',
-                    // email: '17302010063@fudan.edu.cn',
-                    // age: '21',
+                    Gender: '女',
+                    FullName: '',
+                    Email: '',
+                    Age: '',
                     originPassword: '',
                     newPassword: '',
-
+                    Model: '0'
                 },
                 edit: true,
                 rules: {
@@ -175,12 +193,12 @@
         computed: {
             ...mapGetters([
                 'username',
-                'avatar',
                 'email',
                 'region',
                 'gender',
                 'fullName',
-                'age'
+                'age',
+                'model'
             ])
 
         },
@@ -237,11 +255,18 @@
                 }).then(response => {
                     console.log('modifying...')
                     if (response.status === 200) {
-                        this.edit = false;
-                        this.$message.success("modify successfully");
+                        if (response.data.code === 200) {
+                            console.log('modify info ok');
+                            this.$message.success("modify successfully");
+                            store.dispatch('modify', this.model, this.email, this.region, this.gender, this.fullname, this.age)
+                        } else if (response.data.code === 403) {
+                            if (response.data.message === 'password is incorrect') {
+                                this.$message.error('密码输入错误!')
+                            }
+                        }
+
                     }
                 }).catch(error => {
-                    // TODO
                     this.$message.error("error");
                     if (error.response.data.code === '') {
                         this.$message.error("");

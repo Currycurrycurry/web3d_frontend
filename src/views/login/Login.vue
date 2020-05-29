@@ -1,33 +1,42 @@
 <template>
-    <div class="login" clearfix>
-        <div class="login-wrap">
-            <el-row type="flex" justify="center">
-                <el-form ref="loginForm" :model="form" :rules="rules" status-icon label-width="80px">
-                    <h3>登录</h3>
-                    <hr>
-                    <el-form-item prop="username" label="用户名">
-                        <el-input v-model="form.username" placeholder="请输入用户名" prefix-icon></el-input>
-                    </el-form-item>
-                    <el-form-item id="password" prop="password" label="密码">
-                        <el-input v-model="form.password" show-password placeholder="请输入密码"></el-input>
-                    </el-form-item>
-<!--                    <router-link to="/">找回密码</router-link>-->
-                    <router-link :to="'/register/Register'">没有账号？注册</router-link>
-                    <el-form-item>
-                        <el-button type="primary" icon="el-icon-upload" @click="doLogin()">登 录</el-button>
-                    </el-form-item>
-                </el-form>
-            </el-row>
+    <div>
+        <Top/>
+        <div class="login" clearfix>
+            <div class="login-wrap">
+                <el-row justify="center" type="flex">
+                    <el-form :model="form" :rules="rules" label-width="80px" ref="loginForm" status-icon>
+                        <h3>登录</h3>
+                        <hr>
+                        <el-form-item label="用户名" prop="username">
+                            <el-input placeholder="请输入用户名" prefix-icon v-model="form.username"></el-input>
+                        </el-form-item>
+                        <el-form-item id="password" label="密码" prop="password">
+                            <el-input placeholder="请输入密码" show-password v-model="form.password"></el-input>
+                        </el-form-item>
+                        <!--                    <router-link to="/">找回密码</router-link>-->
+                        <router-link :to="'/pages/Register'">没有账号？注册</router-link>
+                        <el-form-item>
+                            <el-button @click="doLogin()" icon="el-icon-upload" type="primary">登 录</el-button>
+                        </el-form-item>
+                    </el-form>
+                </el-row>
+            </div>
         </div>
     </div>
+
 
 </template>
 
 <script>
     // import axios from "axios";
     import api from '../../api'
+    import router from '../../router'
+    import store from '../../store/store'
+    import Top from "../../components/Top";
+
     export default {
         name: "login",
+        components: {Top},
         data() {
             var checkUsername = (rule, value, callback) => {
                 if (!value) {
@@ -74,48 +83,38 @@
                         api.login(this.form).then(response => {
                             console.log("logging in...")
                             if (response.status === 200) {
-                                console.log('success');
-                                let token = response.data.message;
-                                document.cookie = 'token=' + token;
-                                console.log('token is ' + token);
-                                // router.push({ path: '/hall' })
+                                if (response.data.code === 200) {
+                                    console.log('success');
+                                    let token = response.data.message;
+                                    document.cookie = 'token=' + token;
+                                    console.log('token is ' + token);
+                                    this.$message({
+                                        message: '登陆成功',
+                                        type: 'success'
+                                    });
+                                    store.dispatch('setUserInfo')
+                                    router.push({path: '/hall'})
+                                } else if (response.data.code === 404) {
+                                    if (response.data.message === 'user does not exist') {
+                                        this.$message.error('用户名不存在!')
+                                    }
+                                } else if (response.data.code === 403) {
+                                    if (response.data.message === 'password is incorrect') {
+                                        this.$message.error('密码不正确!')
+                                    }
+                                }
+
                             }
                         }).catch(error => {
                             console.log('this is error: ' + error.response)
-                            if (error.response.data.message === 'user does not exist' || error.response.data.code === 404) {
-                                this.$message.error('用户名不存在!')
-                            } else if (error.response.data.message === 'password is incorrect' || error.response.data.code === 403) {
-                                this.$message.error('密码不正确!')
-                            } else {
-                                console.log('problems...');
-                            }
+                            console.log('problems...');
+                            this.$message.error('内部错误')
+
                         });
                     } else {
                         console.log('error submit');
-                        // return false;
+                        this.$message.error('提交失败')
                     }
-
-                    // submit
-                    //         axios
-                    //             .post("/login/", {
-                    //                 name: this.form.username,
-                    //                 password: this.form.password
-                    //             })
-                    //             .then(res => {
-                    //                 console.log("输出response.data.status", res.data.status);
-                    //                 if (res.data.status === 200) {
-                    //                     this.$router.push({ path: "/personal" });
-                    //                 } else {
-                    //                     alert("您输入的用户名或密码错误！");
-                    //                 }
-                    //             });
-                    //     } else {
-                    //         console.log('error submit');
-                    //         return false;
-                    //     }
-                    // });
-
-
                 });
             }
         }
