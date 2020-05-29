@@ -25,7 +25,7 @@
 
         methods: {
             drawEcharts() {
-                var myChart = this.$echarts.init(document.getElementById("gameChart"), 'westeros');
+                var myChart = this.$echarts.init(document.getElementById("gameChart"), 'azul');
                 var option = {
                     title: {
                         text: '玩家游戏次数按天数分布'

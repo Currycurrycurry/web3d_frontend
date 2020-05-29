@@ -5,95 +5,60 @@
         <el-table-column type="expand">
             <template slot-scope="props">
                 <el-form label-position="left" inline class="demo-table-expand">
-                    <el-form-item label="商品名称">
+                    <el-form-item label="知识点类别">
                         <span>{{ props.row.name }}</span>
                     </el-form-item>
-                    <el-form-item label="所属店铺">
-                        <span>{{ props.row.shop }}</span>
-                    </el-form-item>
-                    <el-form-item label="商品 ID">
+                    <el-form-item label="知识点 ID">
                         <span>{{ props.row.id }}</span>
                     </el-form-item>
-                    <el-form-item label="店铺 ID">
-                        <span>{{ props.row.shopId }}</span>
-                    </el-form-item>
-                    <el-form-item label="商品分类">
-                        <span>{{ props.row.category }}</span>
-                    </el-form-item>
-                    <el-form-item label="店铺地址">
-                        <span>{{ props.row.address }}</span>
-                    </el-form-item>
-                    <el-form-item label="商品描述">
+                    <el-form-item label="详情">
                         <span>{{ props.row.desc }}</span>
                     </el-form-item>
                 </el-form>
             </template>
         </el-table-column>
         <el-table-column
-                label="商品 ID"
+                label="知识点 ID"
                 prop="id">
         </el-table-column>
         <el-table-column
-                label="商品名称"
+                label="知识点类别"
                 prop="name">
         </el-table-column>
         <el-table-column
-                label="描述"
+                label="详情"
                 prop="desc">
         </el-table-column>
     </el-table>
 </template>
 
 <script>
-    // import api from '../../api'
+    import api from '../../api'
+
     export default {
         name: "KnowledgeList",
         data() {
             return {
-                tableData: [{
-                    id: '12987122',
-                    name: '好滋好味鸡蛋仔',
-                    category: '江浙小吃、小吃零食',
-                    desc: '荷兰优质淡奶，奶香浓而不腻',
-                    address: '上海市普陀区真北路',
-                    shop: '王小虎夫妻店',
-                    shopId: '10333'
-                }, {
-                    id: '12987123',
-                    name: '好滋好味鸡蛋仔',
-                    category: '江浙小吃、小吃零食',
-                    desc: '荷兰优质淡奶，奶香浓而不腻',
-                    address: '上海市普陀区真北路',
-                    shop: '王小虎夫妻店',
-                    shopId: '10333'
-                }, {
-                    id: '12987125',
-                    name: '好滋好味鸡蛋仔',
-                    category: '江浙小吃、小吃零食',
-                    desc: '荷兰优质淡奶，奶香浓而不腻',
-                    address: '上海市普陀区真北路',
-                    shop: '王小虎夫妻店',
-                    shopId: '10333'
-                }, {
-                    id: '12987126',
-                    name: '好滋好味鸡蛋仔',
-                    category: '江浙小吃、小吃零食',
-                    desc: '荷兰优质淡奶，奶香浓而不腻',
-                    address: '上海市普陀区真北路',
-                    shop: '王小虎夫妻店',
-                    shopId: '10333'
-                }]
+                knowledgeList: [],
+                tableData: [
+                    {
+                        id: '12987122',
+                        name: '选择题', // 选择题/细胞信息/知识点
+                        desc: '1+1=2', //知识点内容
+                    },]
             }
         },
         mounted() {
             this.getKnowlegeList()
         },
         methods: {
-            // getKnowlegeList() {
-            //     api.getKnowlegeList().then(response => {
-            //
-            //     });
-            // }
+            getKnowlegeList() {
+                api.getKnowlegeList().then(response => {
+                    this.knowledgeList = response.data.content
+                }).catch(err => {
+                    console.log(err.response);
+                });
+            }
         }
 
     }

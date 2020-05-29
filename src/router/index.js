@@ -12,6 +12,10 @@ import Models from "../views/Models";
 import KnowledgeList from "../views/personnel/KnowledgeList";
 import Hall from "../views/Hall"
 import Chatting from "../views/Chatting";
+import AdminContainer from "../views/admin/AdminContainer";
+import UserProgress from "../views/admin/UserProgress";
+import UserInfos from "../views/admin/UserInfos";
+import GameNum from "../views/admin/GameNum";
 
 Vue.use(Router)
 
@@ -56,7 +60,27 @@ export default new Router({
                     path: 'chatRoom',
                     name: 'Chatting',
                     component: Chatting
-                }
+                },
+                {
+                    path: 'admin',
+                    name: 'Admin',
+                    component: AdminContainer
+                },
+                {
+                    path: 'userProgress',
+                    name: 'UserProgress',
+                    component: UserProgress
+                },
+                {
+                    path: 'userInfos',
+                    name: 'UserInfos',
+                    component: UserInfos
+                },
+                {
+                    path: 'gameNum',
+                    name: 'GameNum',
+                    component: GameNum
+                },
             ]
         },
         {

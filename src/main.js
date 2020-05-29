@@ -8,7 +8,7 @@ import axios from 'axios'
 import Cookies from 'js-cookie'
 // 引入echarts
 import echarts from 'echarts'
-import 'echarts/theme/westeros'
+import 'echarts/theme/azul'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
@@ -19,6 +19,7 @@ router.beforeEach((to, from, next) => {
   // console.log('to path is ' + to.path)
   // console.log('from path is ' + from.path)
   // console.log('getter is ' + JSON.stringify(store.getters))
+
 
   if (Cookies.get('token') !== '') {
     console.log('token is not none')

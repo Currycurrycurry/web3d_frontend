@@ -1,6 +1,6 @@
 <template>
     <div>
-        <span>所有玩家进度盲排</span>
+<!--        <span>所有玩家进度盲排</span>-->
         <el-button @click="showDetailedUserInfos()" type="text">玩家总人数:{{total}}</el-button>
         <el-table
                 :data="tableData"

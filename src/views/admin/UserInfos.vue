@@ -1,6 +1,5 @@
 <template>
 
-
     <div class="myecharts" id="myecharts">
 
     </div>
@@ -27,7 +26,7 @@
 
         methods: {
             drawEcharts() {
-                var myChart = this.$echarts.init(document.getElementById("myecharts"), 'westeros');
+                var myChart = this.$echarts.init(document.getElementById("myecharts"), 'azul');
                 var option = {
                     title: {
                         text: '玩家年龄分布'

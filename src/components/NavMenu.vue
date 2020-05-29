@@ -1,19 +1,6 @@
 <template>
     <el-menu :default-active="activeIndex" @select="handleSelect" class="el-menu-demo" mode="horizontal" router>
         <el-menu-item index="/hall" route="/hall">游戏中心</el-menu-item>
-        <!--        <el-submenu index="2">-->
-        <!--            <template slot="title">聊天室（待定）</template>-->
-        <!--            <el-menu-item index="2-1">选项1</el-menu-item>-->
-        <!--            <el-menu-item index="2-2">选项2</el-menu-item>-->
-        <!--            <el-menu-item index="2-3">选项3</el-menu-item>-->
-        <!--            <el-submenu index="2-4">-->
-        <!--                <template slot="title">个人中心</template>-->
-        <!--                <el-menu-item index="2-4-1">选项1</el-menu-item>-->
-        <!--                <el-menu-item index="2-4-2">选项2</el-menu-item>-->
-        <!--                <el-menu-item index="2-4-3">选项3</el-menu-item>-->
-        <!--            </el-submenu>-->
-        <!--        </el-submenu>-->
-        <!--        <el-menu-item index="/chatRoom">聊天室(待定)</el-menu-item>-->
         <el-menu-item>
             <el-submenu>
                 <template slot="title">个人中心</template>
@@ -23,11 +10,14 @@
             </el-submenu>
         </el-menu-item>
         <el-menu-item index="/models">角色图鉴</el-menu-item>
+        <el-menu-item index="/admin" v-show="isadmin">管理后台</el-menu-item>
     </el-menu>
-    <!--    <div class="line"></div>-->
+
 </template>
 
 <script>
+    import api from '../api'
+
     export default {
         name: "NavMenu",
         data() {
@@ -38,6 +28,15 @@
         methods: {
             handleSelect(key, keyPath) {
                 console.log(key, keyPath);
+            },
+            isadmin() {
+                let is_admin = false;
+                api.getIsAdmin().then(response => {
+                    is_admin = response.data.content;
+                }).catch(err => {
+                    console.log(err.response);
+                })
+                return is_admin;
             }
         }
     }

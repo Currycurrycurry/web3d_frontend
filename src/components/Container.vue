@@ -3,9 +3,9 @@
         <!--        <el-container style="height: 500px; border: 1px solid #eee">-->
         <!--            <Aside/>-->
         <!--        </el-container>-->
-        <el-container>
-            <Top/>
-        </el-container>
+        <!--        <el-container>-->
+        <!--            <Top/>-->
+        <!--        </el-container>-->
 
         <el-container>
             <!--            <Aside/>-->
@@ -34,7 +34,7 @@
     // import Aside from "./Aside";
     import Header from "./Header";
     import NavMenu from "./NavMenu";
-    import Top from "./Top"
+    // import Top from "./Top"
     import Footer from "./Footer";
 
     export default {
@@ -44,7 +44,7 @@
             NavMenu,
             Header,
             // Aside,
-            Top
+            // Top
         },
         computed: {
             name() {

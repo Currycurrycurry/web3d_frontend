@@ -1,7 +1,11 @@
 <template>
-<!--    @on-load="onLoad"-->
-<!--    <model-three :backgroundAlpha="0" :src="model"></model-three>-->
-    <model-obj :backgroundAlpha="0" :src="publicPath"></model-obj>
+    <!--    @on-load="onLoad"-->
+    <!--    <model-three :backgroundAlpha="0" :src="model"></model-three>-->
+    <div>
+        <span>当前玩家所选模型：{{modelName}}</span>
+        <model-obj :backgroundAlpha="0" :src="publicPath"></model-obj>
+    </div>
+
 
 </template>
 
@@ -14,7 +18,8 @@
         components: {ModelObj},
         data() {
             return {
-                publicPath: process.env.BASE_URL + 'models/cells/Cells.obj' // TODO 模型压缩 根据用户id获取对应model
+                publicPath: process.env.BASE_URL + 'models/cells/Cells.obj', // TODO 模型压缩 根据用户id获取对应model
+                modelName: ''
             }
         },
         computed: {

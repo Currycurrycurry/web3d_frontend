@@ -44,9 +44,9 @@ function getUserInfo(params) {
     return get('/getUserInfo', params)
 }
 
-function uploadAvatar(params) {
-    return post('/api/user/setProfilePhoto', params)
-}
+// function uploadAvatar(params) {
+//     return post('/api/user/setProfilePhoto', params)
+// }
 
 function getRecords() {
     return getNoArgs('/user/records')
@@ -62,8 +62,20 @@ function getKnowlegeList(params) {
 }
 
 
-// 待补充具体后端api
+// 待补充后端api
 function getUserProgresses(params) {
+    return get('', params)
+}
+
+function getIsAdmin(params) {
+    return get('', params)
+}
+
+function getGameNums(params) {
+    return get('', params)
+}
+
+function getUserInfos(params) {
     return get('', params)
 }
 
@@ -72,11 +84,17 @@ export default {
     login,
     modify,
     getUserInfo,
-    uploadAvatar,
     register,
-    getRecords,
     findUserById,
+
+    // 待补充后端api
+    getRecords,
     getKnowlegeList,
     getUserProgresses,
+    getIsAdmin,
+    getGameNums,
+    getUserInfos
+
+
 }
 
