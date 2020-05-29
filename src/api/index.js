@@ -61,8 +61,11 @@ function getKnowlegeList(params) {
     return get('/findKnowledgeByUserId', params)
 }
 
-// // admin pages
-// function get
+
+// 待补充具体后端api
+function getUserProgresses(params) {
+    return get('', params)
+}
 
 
 export default {
@@ -73,6 +76,7 @@ export default {
     register,
     getRecords,
     findUserById,
-    getKnowlegeList
+    getKnowlegeList,
+    getUserProgresses,
 }
 

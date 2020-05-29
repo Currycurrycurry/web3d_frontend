@@ -1,24 +1,22 @@
 <template>
+    <div>
+        <span>玩家游戏次数统计</span>
+        <div class="gameChart" id="gameChart">
 
-
-    <div class="myecharts" id="myecharts">
+        </div>
 
     </div>
 
 </template>
 
 <script>
-    // TODO 获得所有玩家的信息 后台界面 图形化展示数据
-    // 图表一 玩家年龄分布 柱状图
-    // 图表二 玩家地域分析 地图（？）
-    // 图表三 玩家虚拟形象分析
-    // 图表四 玩家性别分析
+    // 折线图 横轴：时间 纵轴：当天所有玩家的游戏次数
     export default {
-        name: "UserInfos",
+        name: "GameNum",
         data() {
             return {
-                age_range: [],
-                age_range_num: [],
+                time_range: [],
+                time_range_num: [],
             }
         },
         mounted() {
@@ -27,21 +25,21 @@
 
         methods: {
             drawEcharts() {
-                var myChart = this.$echarts.init(document.getElementById("myecharts"), 'westeros');
+                var myChart = this.$echarts.init(document.getElementById("gameChart"), 'westeros');
                 var option = {
                     title: {
-                        text: '玩家年龄分布'
+                        text: '玩家游戏次数按天数分布'
                     },
                     tooltip: {},
                     legend: {
-                        data: ['年龄']
+                        data: ['游戏次数']
                     },
                     xAxis: {
                         data: ["衬衫", "羊毛衫", "雪纺衫", "裤子", "高跟鞋", "袜子"]
                     },
                     yAxis: {},
                     series: [{
-                        name: '年龄',
+                        name: '时间',
                         type: 'bar',
                         data: [5, 20, 36, 10, 10, 20]
                     }]
@@ -55,9 +53,5 @@
 </script>
 
 <style scoped>
-    .myecharts {
-        width: 500px;
-        height: 300px;
-    }
 
 </style>
