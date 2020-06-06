@@ -16,6 +16,7 @@ import AdminContainer from "../views/admin/AdminContainer";
 import UserProgress from "../views/admin/UserProgress";
 import UserInfos from "../views/admin/UserInfos";
 import GameNum from "../views/admin/GameNum";
+import Room from "../views/Room"
 
 Vue.use(Router)
 
@@ -38,7 +39,10 @@ export default new Router({
                 {
                     path: 'information',
                     name: 'Information',
-                    component: Information
+                    component: Information,
+                    meta: {
+                        requiresAuth: true
+                    }
                 },
                 {
                     path: 'records',
@@ -81,6 +85,11 @@ export default new Router({
                     name: 'GameNum',
                     component: GameNum
                 },
+                {
+                    path: 'room',
+                    name: 'Room',
+                    component: Room
+                }
             ]
         },
         {

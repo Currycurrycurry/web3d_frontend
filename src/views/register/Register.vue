@@ -1,34 +1,41 @@
 <template>
-	<div class="login clearfix">
-		<div class="login-wrap">
-			<el-row type="flex" justify="center">
-				<el-form ref="registerForm" :model="user" :rules="rules" status-icon label-width="80px">
-					<h3>注册</h3>
-						<router-link to="/login">已有账号？登陆</router-link>
-					<hr>
-					<el-form-item prop="username" label="用户名">
-						<el-input v-model="user.username" placeholder="请输入用户名"></el-input>
-					</el-form-item>
-					<el-form-item prop="email" label="邮箱">
-						<el-input v-model="user.email" placeholder="请输入邮箱"></el-input>
-					</el-form-item>
-					<el-form-item prop="password" label="设置密码">
-						<el-input v-model="user.password" show-password placeholder="请输入密码"></el-input>
-					</el-form-item>
-					<el-form-item label="角色" prop="model">
-						<el-select placeholder="角色" v-model="user.modelId">
-							<el-option label="红细胞" value="0"></el-option>
-							<el-option label="普通细胞" value="1"></el-option>
-							<el-option label="神经元细胞" value="2"></el-option>
-							<el-option label="karamendos细胞" value="3"></el-option>
-						</el-select>
-					</el-form-item>
+	<div>
+		<Top/>
+		<div class="login clearfix">
+			<div class="login-wrap">
+				<el-row type="flex" justify="center">
+					<el-form ref="registerForm" :model="user" :rules="rules" status-icon label-width="80px">
+						<h3>注册</h3>
+							<router-link to="/pages/Login">已有账号？登陆</router-link>
+						<hr>
+						<el-form-item prop="username" label="用户名">
+							<el-input v-model="user.username" placeholder="请输入用户名"></el-input>
+						</el-form-item>
+						<el-form-item prop="email" label="邮箱">
+							<el-input v-model="user.email" placeholder="请输入邮箱"></el-input>
+						</el-form-item>
+						<el-form-item prop="password" label="设置密码">
+							<el-input v-model="user.password" show-password placeholder="请输入密码"></el-input>
+						</el-form-item>
+						<el-form-item label="角色" prop="model">
+							<el-select placeholder="角色" v-model="user.modelId">
+								<el-option label="B细胞" value="0"></el-option>
+								<el-option label="血小板" value="1"></el-option>
+								<el-option label="T细胞" value="2"></el-option>
+								<el-option label="神经元细胞" value="3"></el-option>
+								<el-option label="红血球" value="4"></el-option>
+								<el-option label="抗体" value="5"></el-option>
+								<el-option label="病毒" value="6"></el-option>
+								<el-option label="肿瘤细胞" value="7"></el-option>
+							</el-select>
+						</el-form-item>
 
-					<el-form-item>
-						<el-button type="primary" icon @click="doRegister()">注册账号</el-button>
-					</el-form-item>
-				</el-form>
-			</el-row>
+						<el-form-item>
+							<el-button type="primary" icon @click="doRegister()">注册账号</el-button>
+						</el-form-item>
+					</el-form>
+				</el-row>
+			</div>
 		</div>
 	</div>
 </template>
@@ -37,9 +44,14 @@
 	import api from '../../api';
 	import store from "../../store/store";
 	import router from "../../router";
+	import Top from '../../components/Top'
+	import Cookies from "js-cookie";
 
 	export default {
 		name: "Register",
+		components: {
+			Top,
+		},
 		data() {
 			var checkUsername = (rule, value, callback) => {
 				if (!value) {
@@ -119,8 +131,10 @@
 									console.log('success');
 									this.$message.success("注册成功");
 									let token = response.data.message;
+									let user = response.data.content;
 									document.cookie = 'token=' + token;
 									console.log('token is ' + token);
+									Cookies.set('userID',user['id']);
 									store.dispatch('setUserInfo')
 									router.push({path: '/hall'})
 								} else if (code === 400) {

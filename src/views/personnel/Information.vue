@@ -30,9 +30,8 @@
                 <div class="grid-content editable" v-show="!edit">{{information_data.password}}</div>
                 <div class="grid-content editable" v-show="edit">
                     <div>
-                    <el-input class='input_len' v-model="information_data.originPassword" show-password placeholder="原密码"></el-input>
+                    <el-input class='input_len' v-model="information_data.originalPassword" show-password placeholder="原密码"></el-input>
                     <el-input class='input_len' v-model="information_data.newPassword" show-password placeholder="新密码"></el-input>
-<!--                    <el-button type="primary" icon @click="savePassword()">保存</el-button>-->
                     </div>
                 </div>
             </el-col>
@@ -53,7 +52,6 @@
                 <div class="grid-content editable" v-show="!edit">{{fullName}}</div>
                 <div class="grid-content editable" v-show="edit">
                     <el-input class='input_len' placeholder="请输入全名" v-model="information_data.FullName"></el-input>
-<!--                    <el-button type="primary" icon @click="saveFullname()">保存</el-button>-->
                 </div>
             </el-col>
             <el-col :span="4"><div class="grid-content hint">邮箱</div></el-col>
@@ -61,7 +59,6 @@
                 <div class="grid-content editable" v-show="!edit">{{email}}</div>
                 <div class="grid-content editable" v-show="edit">
                     <el-input class="input_len" placeholder="请输入邮箱" v-model="information_data.Email"></el-input>
-<!--                    <el-button type="primary" icon @click="saveEmail()">保存</el-button>-->
                 </div>
             </el-col>
         </el-row>
@@ -74,7 +71,6 @@
                 <div class="grid-content editable" v-show="edit">
                     <el-input autocomplete="off" class='input_len' type="age"
                               v-model.number="information_data.Age"></el-input>
-                    <!--                    <el-button type="primary" icon @click="savePassword()">保存</el-button>-->
                 </div>
             </el-col>
 
@@ -82,13 +78,17 @@
                 <div class="grid-content hint">形象选择</div>
             </el-col>
             <el-col :span="8">
-                <div class="grid-content editable" v-show="!edit">{{modelId}}</div>
+                <div class="grid-content editable" v-show="!edit">{{model_name[parseInt(model)]}}</div>
                 <div class="grid-content editable" v-show="edit">
-                    <el-select class='input_len' placeholder="请选择性别" v-model="information_data.Model">
-                        <el-option label="红细胞" value="0"></el-option>
-                        <el-option label="普通细胞" value="1"></el-option>
-                        <el-option label="11细胞" value="2"></el-option>
-                        <el-option label="22普通细胞" value="3"></el-option>
+                    <el-select class='input_len' placeholder="请选择细胞" v-model="information_data.Model">
+                        <el-option label="B细胞" value="0"></el-option>
+                        <el-option label="血小板" value="1"></el-option>
+                        <el-option label="T细胞" value="2"></el-option>
+                        <el-option label="神经细胞" value="3"></el-option>
+                        <el-option label="红血球" value="4"></el-option>
+                        <el-option label="抗体" value="5"></el-option>
+                        <el-option label="病毒" value="6"></el-option>
+                        <el-option label="肿瘤细胞" value="7"></el-option>
                     </el-select>
                 </div>
             </el-col>
@@ -109,6 +109,9 @@
             <el-button v-show="!edit" type="primary" icon @click="startEdit()">编辑信息</el-button>
         </el-row>
     </div>
+
+
+
 </template>
 
 <script>
@@ -167,10 +170,20 @@
                     FullName: '',
                     Email: '',
                     Age: '',
-                    originPassword: '',
+                    originalPassword: '',
                     newPassword: '',
-                    Model: '0'
+                    Model: '',
                 },
+                model_name : [
+                    'B细胞',
+                    '血小板',
+                    'T细胞',
+                    '神经细胞',
+                    '红血球',
+                    '抗体',
+                    '病毒',
+                    '肿瘤细胞'
+                ],
                 edit: true,
                 rules: {
                     age:[
@@ -244,25 +257,42 @@
             },
             modify() {
                 console.log("modify the user info...");
+                let model_id = this.information_data.Model?this.information_data.Model:-1;
                 api.modify({
-                    originPassword: this.originPassword,
-                    newPassword: this.newPassword,
-                    fullName: this.fullName,
-                    age: this.age,
-                    region: this.region,
-                    gender: this.gender,
-                    email: this.email,
+                    username: this.username,
+                    originalPassword: this.information_data.originalPassword,
+                    newPassword: this.information_data.newPassword,
+                    fullName: this.information_data.FullName,
+                    age: this.information_data.Age,
+                    region: this.information_data.Region,
+                    gender: this.information_data.Gender,
+                    email: this.information_data.Email,
+                    modelId: model_id
                 }).then(response => {
                     console.log('modifying...')
                     if (response.status === 200) {
                         if (response.data.code === 200) {
+                            let user = response.data.content;
                             console.log('modify info ok');
                             this.$message.success("modify successfully");
-                            store.dispatch('modify', this.model, this.email, this.region, this.gender, this.fullname, this.age)
+                            store.dispatch('modifyModel', user['modelId']);
+                            store.dispatch('modifyAge', user['age']);
+                            store.dispatch('modifyEmail', user['email']);
+                            store.dispatch('modifyFullname', user['fullname']);
+                            store.dispatch('modifyGender', user['gender'])
+                            store.dispatch('modifyRegion', user['region'])
+                            console.log(user['modelId']);
+                            console.log('after modifying...' + store.getters);
+                            console.log(store.getters.model);
+                            console.log(store.getters);
                         } else if (response.data.code === 403) {
                             if (response.data.message === 'password is incorrect') {
                                 this.$message.error('密码输入错误!')
                             }
+                        } else if (response.data.code === 404) {
+                            this.$message.error('用户不存在！')
+                        } else {
+                            this.$message.error('修改失败！')
                         }
 
                     }
@@ -271,15 +301,17 @@
                     if (error.response.data.code === '') {
                         this.$message.error("");
                     }
-
                 });
                 this.edit = false;
             },
             startEdit() {
                 console.log("edit..");
                 this.edit = true;
-
+                console.log(this.model_name);
+                console.log(this.model_name[parseInt(store.getters.model)])
+                console.log(store.getters)
             }
+
 
         }
     }

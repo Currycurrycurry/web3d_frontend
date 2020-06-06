@@ -12,61 +12,52 @@ import 'echarts/theme/azul'
 
 Vue.config.productionTip = false
 Vue.use(ElementUI)
-
-// const whiteList = ['/pages/Login', '/pages/Register', '/pages/Page404', '/pages/Page500']
+const whiteList = ['/pages/Login', '/pages/Register', '/pages/Page404', '/pages/Page500']
 router.beforeEach((to, from, next) => {
-  // console.log('enter into the router...')
-  // console.log('to path is ' + to.path)
-  // console.log('from path is ' + from.path)
-  // console.log('getter is ' + JSON.stringify(store.getters))
 
+  console.log(whiteList)
+  console.log('token is ' + Cookies.get('token'))
+  console.log('user id is ' + store.getters.user_id);
 
-  if (Cookies.get('token') !== '') {
-    console.log('token is not none')
+  if (store.getters.user_id !== '-1') {
+    // 已登陆
+    if (whiteList.indexOf(to.path) !== -1) {
+      next('hall')
+    }
     next()
   } else {
-    next('/pages/Login')
+    // 未登陆
+    if (whiteList.indexOf(to.path) !== -1) {
+      next()
+    } else {
+      store.dispatch('setUserInfo').then(() => {
+        if (store.getters.user_id !== '-1') {
+          console.log('in')
+          next()
+        } else {
+          next('/pages/Login')
+        }
+      }).catch(() => {
+        next('/pages/Login')
+      })
+
+    }
   }
 
-  // if (store.getters.user_id !== '-1') { // 判断是否有token
-  //   console.log('hello' + store.getters.user_id);
-  //   if (whiteList.indexOf(to.path) !== -1) {
-  //     console.log('whiteList index is ' + whiteList.indexOf(to.path))
-  //     next('hall')
-  //   }
-  //   next()
-  //
-  // } else {
-  //   console.log('hello!')
-  //   if (whiteList.indexOf(to.path) !== -1) {
-  //     console.log('whiteList index is ' + whiteList.indexOf(to.path))
-  //     next()
-  //   } else {
-  //     if (Cookies.get('token') !== '') {
-  //       console.log('token is not none')
-  //       next('hall')
-  //     } else {
-  //       next('/pages/Login')
-  //     }
-  //
-  //
-  //
-  //   }
-  // }
 })
 
-
-// axios.interceptors.request.use(
-//     config => {
-//       console.log("axios interceptor works...")
-//       if (store.getters.token) {
-//         config.headers.jwt `jwt_token ${store.getters.token}`;
-//       }
-//       return config;
-//     },
-//     err => {
-//       return Promise.reject(err);
-//     });
+axios.interceptors.request.use(
+    config => {
+      console.log("axios interceptor works...")
+      if (Cookies.get('token')) {
+        config.headers.jwt_token = Cookies.get('token');
+        console.log('config header is ' + config.headers);
+      }
+      return config;
+    },
+    err => {
+      return Promise.reject(err);
+    });
 
 axios.interceptors.response.use(
     response => {
@@ -97,10 +88,3 @@ new Vue({
   store,
 }).$mount('#app')
 
-// new Vue({
-//   el:'#app',
-//   router,
-//   store,
-//   template: '<App/>',
-//   components: { App }
-// })

@@ -40,7 +40,8 @@
 </template>
 
 <script>
-    // import api from '../../api'
+    import api from '../../api'
+    import store from '../../store/store'
     export default {
         name: "Records",
         data() {
@@ -75,16 +76,29 @@
 
         },
         mounted() {
-            this.recordsTable = []
+            let id = store.getters.user_id;
+            this.getRecords(id)
         },
         methods: {
-            // getRecords () {
-            //     api.getRecords().then(response => {
-            //         // TODO api
-            //
-            //     })
-            //
-            // }
+            getRecords (id) {
+                console.log(store.getters.user_id);
+                api.getRecords({userId: id}).then(response => {
+                    console.log(response.data.content);
+                    let data = response.data.content;
+                    for (let i = 0;i<data.length;i++) {
+                        this.recordsTable.push({
+                            gameId: i,
+                            status: data[i]['status'],
+                            score: data[i]['score'],
+                            players: '', //TODO
+                            time: data[i]['time']
+                        })
+                    }
+                }).catch(err => {
+                    console.log(err.response);
+                })
+
+            }
 
         }
     }

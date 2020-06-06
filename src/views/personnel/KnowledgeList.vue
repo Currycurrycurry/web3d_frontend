@@ -6,7 +6,7 @@
             <template slot-scope="props">
                 <el-form label-position="left" inline class="demo-table-expand">
                     <el-form-item label="知识点类别">
-                        <span>{{ props.row.name }}</span>
+                        <span>{{ props.row.type }}</span>
                     </el-form-item>
                     <el-form-item label="知识点 ID">
                         <span>{{ props.row.id }}</span>
@@ -23,7 +23,7 @@
         </el-table-column>
         <el-table-column
                 label="知识点类别"
-                prop="name">
+                prop="type">
         </el-table-column>
         <el-table-column
                 label="详情"
@@ -34,6 +34,7 @@
 
 <script>
     import api from '../../api'
+    import store from '../../store/store'
 
     export default {
         name: "KnowledgeList",
@@ -41,20 +42,33 @@
             return {
                 knowledgeList: [],
                 tableData: [
-                    {
-                        id: '12987122',
-                        name: '选择题', // 选择题/细胞信息/知识点
-                        desc: '1+1=2', //知识点内容
-                    },]
+                    // {
+                    //     id: '12987122',
+                    //     type: '选择题', // 选择题/细胞信息/知识点
+                    //     desc: '1+1=2', //知识点内容
+                    // },
+                ]
             }
         },
         mounted() {
-            this.getKnowlegeList()
+            let id =  store.getters.user_id;
+            this.getKnowledgeList(id)
         },
         methods: {
-            getKnowlegeList() {
-                api.getKnowlegeList().then(response => {
-                    this.knowledgeList = response.data.content
+            getKnowledgeList(id) {
+                api.getKnowlegeList({userId: id}).then(response => {
+                    let data = response.data.content
+                    let len = response.data.content.length;
+
+                    for (var i = 0;i < len; i++) {
+                        console.log(data[i])
+                        console.log(data[i])
+                        this.tableData.push({
+                            id: i,
+                            type: '高中生物',
+                            desc: data[i]['content']
+                        })
+                    }
                 }).catch(err => {
                     console.log(err.response);
                 });

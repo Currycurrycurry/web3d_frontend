@@ -1,14 +1,16 @@
 import axios from 'axios'
 // import store from '../store/store'
-const baseURL = 'http://localhost:8080'
-
+// const baseURL = 'http://122.51.160.221:8080'
+// const gameURL = 'http://122.51.160.221:8080'
+const baseURL = 'http://localhost:8080' //http://122.51.160.221:8080/welcome
+const gameURL = 'http://localhost:8080'
 axios.defaults.timeout = 10000
 axios.defaults.baseURL = baseURL
 axios.defaults.withCredentials = true
 axios.defaults.headers.post['Content-Type'] = 'application/x-www-form-urlencoded'
 axios.defaults.headers.get['Content-Type'] = 'application/json'
 // axios.defaults.headers.post['jwt_token'] = store.getters.token // for POST requests
-console.log('in api index.js...');
+// console.log('in api index.js...');
 // console.log("store's token is" + store.getters.token);
 // if (store.getters.token) {
 //     axios.defaults.headers.common['jwt_token'] = store.getters.token;
@@ -27,6 +29,14 @@ function get(url, params) {
 function getNoArgs(url) {
     return axios.get(url)
 }
+
+// function put(url, params) {
+//     return axios.put(url, params)
+// }
+//
+// function deleteArgs(url, params) {
+//     return axios.delete(url, params)
+// }
 
 function login (parmas) {
     return post('/login', parmas)
@@ -48,39 +58,76 @@ function getUserInfo(params) {
 //     return post('/api/user/setProfilePhoto', params)
 // }
 
-function getRecords() {
-    return getNoArgs('/user/records')
+
+
+function findUserById(_params) {
+    return get('/findUserById', {params: _params})
 }
 
-// TODO get or post
-function findUserById(params) {
-    return get('/findUserById', params)
+function getKnowlegeList(_params) {
+    return get('/findKnowledgeByUserId', {params: _params})
 }
-
-function getKnowlegeList(params) {
-    return get('/findKnowledgeByUserId', params)
-}
-
 
 // 待补充后端api
-function getUserProgresses(params) {
-    return get('', params)
+function getRecords(_params) {
+    return get('findRecordsByUserId', {params: _params})
 }
 
-function getIsAdmin(params) {
-    return get('', params)
+// function getModelIdByUserId(params) {
+//     return get('', params)
+// }
+
+
+function getUserProgresses() {
+    return getNoArgs('/getUserProgresses')
 }
 
-function getGameNums(params) {
-    return get('', params)
+function getIsAdmin(_params) {
+    return get('/getIsAdmin', {params: _params})
 }
 
-function getUserInfos(params) {
-    return get('', params)
+function getGameNums(_params) {
+    return get('/getUserGameTimes', {params: _params})
+}
+
+function getUserInfos(_params) {
+    return get('/getUserInfos', {params: _params})
+}
+
+function changeModel(params) {
+    return post('/changeModel', params)
+}
+
+function getAllKnowledges() {
+    return getNoArgs('/getAllKnowledge')
+}
+
+function addKnowledge(params) {
+    return post('/addKnowledge', params)
+}
+
+function deleteKnowledge(params) {
+    return post('/deleteKnowledge', params)
+}
+
+function modifyKnowledge(params) {
+    return post('/modifyKnowledge', params)
+}
+
+function createRoom(_params) {
+    return get('/initRoom', {params:_params})
+}
+
+function getRooms() {
+    return getNoArgs('/getRoomInfo')
 }
 
 
 export default {
+    // urls
+    gameURL,
+
+    // used
     login,
     modify,
     getUserInfo,
@@ -93,7 +140,17 @@ export default {
     getUserProgresses,
     getIsAdmin,
     getGameNums,
-    getUserInfos
+    getUserInfos,
+    // getModelIdByUserId,
+    changeModel,
+    getAllKnowledges,
+    addKnowledge,
+    deleteKnowledge,
+    modifyKnowledge,
+
+    createRoom,
+    getRooms,
+
 
 
 }

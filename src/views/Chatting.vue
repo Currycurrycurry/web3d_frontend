@@ -1,5 +1,9 @@
 <template>
     <div class="wrap" ref="scroll">
+<!--        <span>房间号：{{roomID}}</span>-->
+        <span><el-button @click="leaveRoom()" type="text">退出游戏</el-button></span>
+        <iframe src="game/main/src/main.html" frameborder="0" scrolling="auto" height="500px" width="1000px" style="margin: 30px 10px;"></iframe>
+        <div class="chatting">
         <el-row>
             <el-col :span="24">
                 <div class="message-list">
@@ -30,7 +34,7 @@
                 </div>
             </el-col>
         </el-row>
-        <el-row>
+        <el-row style="width:100%">
             <el-col :span="20">
                 <div>
                     <el-input
@@ -38,7 +42,7 @@
                             placeholder="请输入内容"
                             v-model="inputValue"
                             @keyup.enter="send"
-                            maxlength="30"
+                            maxlength="20"
                             show-word-limit>
                     </el-input>
 
@@ -46,7 +50,7 @@
             </el-col>
             <el-col :span="4"><el-button type="primary" @click="send">发 送</el-button></el-col>
         </el-row>
-
+        </div>
     </div>
 </template>
 
@@ -55,6 +59,7 @@
     import Stomp from "stompjs";
     import api from '../api'
     import { mapGetters } from 'vuex'
+    import Cookies from 'js-cookie'
 
     export default {
         name: "Chatting",
@@ -63,7 +68,11 @@
                 onlineUserList: {},
                 inputValue: '',
                 messageList:[],
-                chat_socket: null
+                chat_socket: null,
+                roomID: Cookies.get('roomID'),
+                // msgUrl: '/topic/' + this.roomID + '/toAll'
+                msgUrl: '/topic/1/toAll',
+                startUrl: 'topic/1/startGame'
             }
         },
         created () {
@@ -92,9 +101,10 @@
                         })
                         delete self.onlineUserList[user_id]
                     })
-                    this.subscribe('/topic/startGame', function (obj) {
-                        let userID = obj.content.newUser.id;
-                        let userName = obj.content.newUser.username;
+                    this.subscribe(this.startUrl, function (obj) {
+                        let obj_ = JSON.parse(obj.body);
+                        let userID = obj_.content['newUser'].id;
+                        let userName = obj_.content['newUser'].username;
                         console.log('join: ' + userID)
                         let otherUserUsername = ''
                         otherUserUsername = userName
@@ -102,7 +112,7 @@
                         self.messageList.push({type: 2, msg: '用户 ' + otherUserUsername + ' 加入聊天', msgUser: null})
                     })
 
-                    this.subscribe('/topic/toAll', function (obj) {
+                    this.subscribe(this.msgUrl, function (obj) {
                         console.log('enter into toALL sub');
                         console.log('obj body is ' + obj.body);
                         let obj_ = JSON.parse(obj.body);
@@ -117,7 +127,6 @@
                             // self.joined(userID)
                             user = self.onlineUserList[userID]
                             self.putMessage(user._username, msg, 1)
-
                             })
                         } else {
                             if (userID === self.user_id) {
@@ -140,23 +149,27 @@
         },
         methods: {
             join () {
-                let msg = {
-                    'x': 0,
-                    'y': 0,
-                    'z': 0,
-                    'objectId': this.user_id
-                    // 'objectId': 2
-                }
-                console.log('msg is ' + msg)
-                this.chat_socket.send('/app/connectToServer', {},
-                JSON.stringify(msg))
+                // let msg = {
+                //     'x': 0,
+                //     'y': 0,
+                //     'z': 0,
+                //     'rotation':0.0,
+                //     'objectId': this.user_id,
+                //     'roomId': parseInt(this.roomID)
+                //     // 'objectId': 2
+                // }
+                // console.log(msg.roomId)
+                // console.log('msg is ' + msg)
+                // this.chat_socket.send('/app/connectToServer', {},
+                // JSON.stringify(msg))
             },
             send () {
                 this.message = this.trim(this.inputValue)
                 let msg = {
                     'toId': -1,
                     'fromId': this.user_id,
-                    'content':this.message
+                    'content':this.message,
+                    'roomId': parseInt(this.roomID)
                 }
                 if (this.message.length > 0) {
                     this.chat_socket.send('/app/chatMessageToAll', {}, JSON.stringify(msg))
@@ -171,7 +184,7 @@
             },
             pushUsers (userID) {
                 let otherUserUsername = ''
-                api.findUserById({id: userID}).then(response => {
+                api.findUserById({userId: userID}).then(response => {
                     otherUserUsername = response.data['username']
                     this.onlineUserList[userID] = {_username: otherUserUsername}
                 }).catch(error => console.log(error))
@@ -183,7 +196,7 @@
                 // this.onlineUserList[userID] = {_username: "test"};
                 return new Promise((resolve, reject) => {
                     let otherUserUsername = ''
-                    api.findUserById({id: userID}).then(response => {
+                    api.findUserById({userId: userID}).then(response => {
                         otherUserUsername = response.data['username']
                         this.onlineUserList[userID] = {_username: otherUserUsername}
                         resolve(response)
@@ -206,13 +219,11 @@
                     }
                 })
             },
-
-
-
-
-
-
-
+            leaveRoom() {
+                this.$router.push({
+                    path: '/hall'
+                })
+            }
         }
 
     }
@@ -265,6 +276,10 @@
         display: flex;
         min-height: 100px;
         flex-direction: column;
+    }
+
+    .chatting {
+        margin: 0 auto;
     }
 
 

@@ -33,6 +33,7 @@
     import router from '../../router'
     import store from '../../store/store'
     import Top from "../../components/Top";
+    import Cookies from 'js-cookie'
 
     export default {
         name: "login",
@@ -86,7 +87,9 @@
                                 if (response.data.code === 200) {
                                     console.log('success');
                                     let token = response.data.message;
+                                    let user = response.data.content;
                                     document.cookie = 'token=' + token;
+                                    Cookies.set('userID',user['id']);
                                     console.log('token is ' + token);
                                     this.$message({
                                         message: '登陆成功',
