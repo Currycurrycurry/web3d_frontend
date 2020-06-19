@@ -8,5 +8,6 @@ const getters = {
     age:state => state.user.age,
     gender:state => state.user.gender,
     region: state => state.user.region,
+    isadmin: state => state.user.isadmin
 }
 export default getters

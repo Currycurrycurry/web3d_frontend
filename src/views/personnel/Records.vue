@@ -42,6 +42,7 @@
 <script>
     import api from '../../api'
     import store from '../../store/store'
+    import {mapGetters} from 'vuex'
     export default {
         name: "Records",
         data() {
@@ -75,28 +76,65 @@
             }
 
         },
+        computed:{
+            ...mapGetters([
+                'user_id'
+            ])
+        },
         mounted() {
-            let id = store.getters.user_id;
-            this.getRecords(id)
+            // let id = this.user_id;
+            this.getRecords()
         },
         methods: {
-            getRecords (id) {
+            getRecords () {
                 console.log(store.getters.user_id);
-                api.getRecords({userId: id}).then(response => {
-                    console.log(response.data.content);
-                    let data = response.data.content;
-                    for (let i = 0;i<data.length;i++) {
-                        this.recordsTable.push({
-                            gameId: i,
-                            status: data[i]['status'],
-                            score: data[i]['score'],
-                            players: '', //TODO
-                            time: data[i]['time']
+                if (store.getters.user_id === '-1'){
+                    store.dispatch('setUserInfo').then(() => {
+                        api.getRecords({userId: store.getters.user_id}).then(response => {
+                            console.log(response.data.content);
+                            let data = response.data.content;
+                            for (let i = 0;i<data.length;i++) {
+                                let users = data[i]['users']
+                                let user_names = []
+                                for (let j = 0;j < users.length; j ++) {
+                                    user_names.push(users[j]['username'])
+                                }
+                                this.recordsTable.push({
+                                    gameId: i,
+                                    status: data[i]['status'],
+                                    score: data[i]['score'],
+                                    players: user_names.join(),
+                                    time: data[i]['time']
+                                })
+                            }
+                        }).catch(err => {
+                            console.log(err.response);
                         })
-                    }
-                }).catch(err => {
-                    console.log(err.response);
-                })
+
+                    })
+                } else {
+                    api.getRecords({userId: store.getters.user_id}).then(response => {
+                        console.log(response.data.content);
+                        let data = response.data.content;
+                        for (let i = 0;i<data.length;i++) {
+                            let users = data[i]['users']
+                            let user_names = []
+                            for (let j = 0;j < users.length; j ++) {
+                                user_names.push(users[j]['username'])
+                            }
+                            this.recordsTable.push({
+                                gameId: i,
+                                status: data[i]['status'],
+                                score: data[i]['score'],
+                                players: user_names.join(),
+                                time: data[i]['time']
+                            })
+                        }
+                    }).catch(err => {
+                        console.log(err.response);
+                    })
+                }
+
 
             }
 

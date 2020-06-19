@@ -19,7 +19,7 @@ router.beforeEach((to, from, next) => {
   console.log('token is ' + Cookies.get('token'))
   console.log('user id is ' + store.getters.user_id);
 
-  if (store.getters.user_id !== '-1') {
+  if (store.getters.user_id !== -1) {
     // 已登陆
     if (whiteList.indexOf(to.path) !== -1) {
       next('hall')
@@ -31,7 +31,9 @@ router.beforeEach((to, from, next) => {
       next()
     } else {
       store.dispatch('setUserInfo').then(() => {
-        if (store.getters.user_id !== '-1') {
+        console.log('enter...')
+        console.log(store.getters.user_id)
+        if (store.getters.user_id !== -1) {
           console.log('in')
           next()
         } else {
@@ -69,15 +71,20 @@ axios.interceptors.response.use(
         switch (error.response.status) {
           case 403:
             router.replace({
-              path: '/pages/login',
+              path: '/pages/Login',
               query: {redirect: router.currentRoute.fullPath}
             });
+            break;
+          case 400:
+            router.replace( {
+              path: '/pages/Login',
+              query: {redirect:  router.currentRoute.fullPath}
+            });break;
         }
       }
       return Promise.reject(error.response.data);
     }
 );
-
 
 Vue.prototype.$http = axios;
 Vue.prototype.$echarts = echarts;

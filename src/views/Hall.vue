@@ -42,9 +42,6 @@
                         <el-divider><span class="smallheader">小Tips</span></el-divider>
                         <span>通关条件：收集足够多的信息，队伍的进度将显示在游戏界面上方</span><br/>
                         <span>游戏失败：当队伍体力值降为0，任务宣告失败。</span>
-
-
-
                     </div></div>
             </el-collapse-transition>
         </div>

@@ -1,0 +1,2726 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+<meta http-equiv="Access-Control-Allow-Origin" content="*" />
+    <meta charset="UTF-8">
+    <title>A 3D website</title>
+    <style>
+        :root{
+            --vitality:100%;
+            --process:0%;
+        }
+        body {
+            margin: 0;
+            overflow: hidden;
+            /* 隐藏body窗口区域滚动条 */
+        }
+        .canvas{
+            position:absolute;
+            z-index:3;
+            left:10%;
+            top:5%;
+
+
+        }
+        #canvas-border{
+            position:absolute;
+            z-index:2;
+            left:9.5%;
+            top:4%;
+            width:81%;
+            height:92%;
+            border-radius:10px;
+            background-color:white;
+        }
+        #process-border{
+            position:absolute;
+            z-index:4;
+            left:30%;
+            top:10%;
+            width:40%;
+            height:3%;
+            display:block;
+            background-color:rgba(0,0,0,0.5);
+            border:1px solid darkslategray;
+            border-radius:5px;
+            overflow:hidden;
+
+        }
+        #process{
+            width:var(--process);
+            height:100%;
+            display:block;
+            background-color:greenyellow;
+        }
+        #blood-border{
+            position:absolute;
+            z-index:4;
+            left:13%;
+            bottom:10%;
+            width:20%;
+            height:1.5%;
+            display:block;
+            background-color:rgba(0,0,0,0.5);
+            border:1px solid darkslategray;
+            border-radius:5px;
+            overflow:hidden;
+
+
+        }
+        #blood{
+            width:var(--vitality);
+            height:100%;
+            display:block;
+            background-color:red;
+        }
+        #cross{
+            position:absolute;
+            z-index:4;
+            height:100px;
+            width:100px;
+            left:50%;
+            top:50%;
+            margin-left:-50px;
+            margin-top:-50px;
+            background-image:url('../images/cross.png');
+            opacity:0.5;
+        }
+
+        #backpack{
+            padding: 10px;
+            /*background-color: #d3d3d3;*/
+            color: antiquewhite;
+            width: 60%;
+            height: 60%;
+            position: fixed;
+            top: 20%;
+            z-index: 10;
+            border-radius: 10px;
+            display: none;
+            overflow-y: scroll;
+        }
+
+        #quiz{
+            border-color: aqua;
+            border-style: solid;
+            padding: 30px;
+            background-color: darkslateblue;
+            color: antiquewhite;
+            width: 40%;
+            height: 30%;
+            position: fixed;
+            top: 20%;
+            z-index: 10;
+            border-radius: 10px;
+            display: none;
+            overflow-y: scroll;
+        }
+
+        #btSubmit{
+            background-color: lightblue;
+            border-color: blueviolet;
+            border-radius: 15px;
+            width: 20%;
+            margin-top: 10px;
+        }
+
+        #game-over-board{
+            padding: 10px;
+            /*background-color: #d3d3d3;*/
+            color: antiquewhite;
+            width: 60%;
+            height: 60%;
+            position: fixed;
+            top: 20%;
+            z-index: 11;
+            border-radius: 10px;
+            display:none;
+
+        }
+
+        #message{
+            font-size: 20px;
+            background-color: red;
+            color: bisque;
+            padding: 0 10px;
+            text-align: center;
+            position: fixed;
+            top: 30%;
+            z-index: 50;
+            border-radius: 10px;
+            opacity: 0.5;
+            display: none;
+        }
+
+        #mask{
+            padding: 10px;
+            background-color: #000000;
+            opacity: 0.4;
+            width: 60%;
+            height: 60%;
+            position: fixed;
+            top: 20%;
+            z-index: 9;
+            border-radius: 10px;
+            display: none;
+        }
+        .gameover-h{
+            text-align:center;
+        }
+        #victory{
+            display:none;
+        }
+        #defeat{
+            display:none;
+        }
+
+    </style>
+    <link rel="stylesheet" href="css/style.css">
+    <!--threejs-->
+    <script src="../lib/three.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/js-cookie@2/src/js.cookie.min.js"></script>
+
+    <script src="../lib/OBJLoader.js"></script>
+    <script src="../lib/MTLLoader.js"></script>
+    <script src="../lib/OrbitControls.js"></script>
+    <script src="../lib/TGALoader.js"></script>
+    <script src="./MathUtils.js"></script>
+    <script src="./Reflector.js"></script>
+    <script src="./Refractor.js"></script>
+    <script src="./Water2.js"></script>
+    <script type="text/javascript" src="../lib/sockjs.js"></script>
+    <script type="text/javascript" src="../lib/stomp.min.js"></script>
+    <script type="text/javascript" src="../lib/jquery.js"></script>
+    <!--physics-->
+    <script type="text/javascript" src="../lib/physi.js"></script>
+    <script src="./js/FirstPersonControls.js"></script>
+
+</head>
+
+<body>
+<div id = 'canvas-border'></div>
+<div id = 'process-border'><div id = 'process'></div></div>
+<div id = 'blood-border'><div id = 'blood'></div></div>
+<div id = 'cross'></div>
+<div id="mask"></div>
+<div id = 'game-over-board'>
+    <h1 class = 'gameover-h' id = 'victory'>VICTORY</h1>
+    <h1 class = 'gameover-h' id = 'defeat'>DEFEAT</h1>
+</div>
+<div id='backpack'>
+    <p>-----------------------------------------------------<br>目前公开的细胞情报<br>-----------------------------------------------------</p>
+    <div id="collected-cellInfo"></div>
+    <p>-----------------------------------------------------<br>知识点<br>-----------------------------------------------------</p>
+    <div id="collected-knowledgePoints"></div>
+</div>
+<div id='quiz'>
+    <p>精通<span id="keywords"></span>的病毒向你发起了挑战</p>
+    <p id="question"></p>
+    <form id="answerSheet">
+        <input type="radio" name="answer" value="A"/><span id="answerA"></span><br>
+        <input type="radio" name="answer" value="B"/><span id="answerB"></span><br>
+        <input type="radio" name="answer" value="C"/><span id="answerC"></span><br>
+        <input type="radio" name="answer" value="D"/><span id="answerD"></span><br>
+    </form>
+    <button id="btSubmit">提交</button>
+<!--    <div id="result"><p id="info"></p></div>-->
+</div>
+
+<div id="message">
+    <p id="responseMsg">回答正确</p>
+</div>
+
+
+
+<div class="container">
+    <div class="container_rotate">
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+        <div class="rotate">
+            <div class="flip_rotate">
+                <div class="flip_pos">
+                    <div class="flip"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+<script>
+    Physijs.scripts.worker = '../lib/physijs_worker.js';
+    Physijs.scripts.ammo = './ammo.js';
+    let models = ['B细胞','血小板','T细胞','神经细胞','红血球','抗体','病毒','肿瘤细胞'];
+    let model_size = [5,9,0.1,9,0.2,1,2,9];
+    let timer = (new Date()).valueOf();
+    let timeGap = 1000;
+    let frameTime = (new Date()).valueOf();
+    let rate;
+    let packId;
+    let gameOver = false;
+    let scoreGoal = 5;
+    let idFont;
+    let quizTaking=false;
+
+    function NPC(){
+        this.position = new THREE.Vector3(0,25,0);
+        this.rotation = new THREE.Vector3(0,0,0);
+        this.model = undefined;
+        this.rigidBody = undefined;
+        this.nextPosition = new THREE.Vector3(0,25,0);
+        this.nextRotation = new THREE.Vector3(0,0,0);
+        this.startMoving = false;
+
+        this.update = function(){
+
+           if(this.startMoving){
+               //当开始接收到更新后的位置时开始插值计算位置更新
+               this.position.x = this.position.x + (this.nextPosition.x - this.position.x) * rate;
+               this.position.y = this.position.y + (this.nextPosition.y- this.position.y) * rate;
+               this.position.z = this.position.z + (this.nextPosition.z - this.position.z) * rate;
+               this.rotation.x = this.rotation.x + (this.nextRotation.x - this.rotation.x) * rate;
+               this.rotation.y = this.rotation.y + (this.nextRotation.y - this.rotation.y) * rate;
+               this.rotation.z = this.rotation.z + (this.nextRotation.z - this.rotation.z) * rate;
+           }
+            // this.position = this.nextPosition;
+            // this.rotation = this.nextRotation;
+            this.fixPosRot();
+
+
+        };
+        this.fixPosRot = function(){
+            this.rigidBody.position.set(this.position.x,this.position.y,this.position.z);
+            this.rigidBody.rotation.setFromVector3(this.rotation);
+            this.rigidBody.__dirtyPosition = true;
+            this.rigidBody.__dirtyRotation = true;
+
+        };
+    }
+
+    function Player(){
+        this.position = new THREE.Vector3(0,25,0);
+        this.rotation = new THREE.Vector3(0,0,0);
+        this.name = '';
+        this.model = undefined;
+        this.rigidBody = undefined;
+        this.nextPosition = new THREE.Vector3(0,25,0);
+        this.nextRotation = new THREE.Vector3(0,0,0);
+        this.startMoving = false;
+        this.update = function(){
+           if(this.startMoving){
+               //当开始接收到更新后的位置时开始插值计算位置更新
+               this.position.x = this.position.x + (this.nextPosition.x - this.position.x) * rate;
+               this.position.y = this.position.y + (this.nextPosition.y- this.position.y) * rate;
+               this.position.z = this.position.z + (this.nextPosition.z - this.position.z) * rate;
+               this.rotation.x = this.rotation.x + (this.nextRotation.x - this.rotation.x) * rate;
+               this.rotation.y = this.rotation.y + (this.nextRotation.y - this.rotation.y) * rate;
+               this.rotation.z = this.rotation.z + (this.nextRotation.z - this.rotation.z) * rate;
+           }
+            // this.position = this.nextPosition;
+            // this.rotation = this.nextRotation;
+
+            this.fixPosRot();
+
+
+        };
+        this.fixPosRot = function(){
+            this.rigidBody.position.set(this.position.x,this.position.y,this.position.z);
+            this.rigidBody.rotation.setFromVector3(this.rotation);
+            this.rigidBody.__dirtyPosition = true;
+            this.rigidBody.__dirtyRotation = true;
+
+
+        };
+    }
+
+    function Loader(modelNum,todo){
+        //记录需要加载的模型数量以及已加载的模型数量。
+        this.modelNumber = modelNum;
+        this.numLoaded = 0;
+        this.todo = todo;
+        this.loadFinish = function(){
+            this.numLoaded+=1;
+            if(!this.todo)
+                return;
+            if(this.numLoaded == this.modelNumber){
+                this.todo();
+                this.todo = undefined;
+            }
+        };
+
+
+    }
+
+    (function ($) {
+        $.getUrlParam = function (name) {
+            var reg = new RegExp("(^|&)" + name + "=([^&]*)(&|$)");
+            var r = window.location.search.substr(1).match(reg);
+            if (r != null) return unescape(r[2]); return null;
+        }
+    })(jQuery);
+
+    var water;
+    //global variables
+    var vitality=100;
+    var process = 0;
+    var scene,renderer,camera,ground,player;
+    var camera_parent;
+    var front=new THREE.Vector3();
+    var velocity=new THREE.Vector3();
+    var playerRotation = new THREE.Vector3(0,0,0);
+    var stop_velocity = new THREE.Vector3(0,0,0);
+    let players = new Map();
+    let npcs = new Map();
+    let modelLoader;
+    // let playerId=Number($.getUrlParam('id'));
+    // let roomId = 0;
+   let playerId=Number(Cookies.get('userID'));
+   let roomId = Number(Cookies.get('roomID'));
+
+    let playerName = 'fudan.pbl.mm.domain.User@'+playerId.toString(16);
+    let nickName;
+
+
+    let CellInfo = document.getElementById('collected-cellInfo');
+    let KnowledgePoints = document.getElementById('collected-knowledgePoints');
+    //储存box的rotation，修改该变量，并在每次物理模拟后替换box的rotation
+    // init scene
+    var  materials = [], parameters;
+
+    initScene=function () {
+        scene = new Physijs.Scene;
+        scene.setGravity(new THREE.Vector3( 0, -30, 0 ));
+
+
+        /*场景效果*/
+        //雾化
+        scene.fog = new THREE.Fog(0x8b0000, 30, 200);
+        /*白细胞漂浮*/
+        var geometry = new THREE.BufferGeometry();
+        var vertices = [];
+        var textureLoader = new THREE.TextureLoader();
+        var sprite1 = textureLoader.load( '../images/WBC1.png' );
+        var sprite2 = textureLoader.load( '../images/WBC1.png' );
+        var sprite3 = textureLoader.load( '../images/WBC3.png' );
+        var sprite4 = textureLoader.load( '../images/WBC4.png' );
+        var sprite5 = textureLoader.load( '../images/WBC5.png' );
+        for ( var i = 0; i < 50; i ++ ) {
+            var x = Math.random() * 500 - 250;
+            var y = Math.random() * 500 - 250;
+            var z = Math.random() * 500 - 250;
+            vertices.push( x, y, z );
+        }
+        geometry.setAttribute( 'position', new THREE.Float32BufferAttribute( vertices, 3 ) );
+        parameters = [
+            [[ 1.0, 0.2, 0.5 ], sprite2, 20 ],
+            [[ 0.95, 0.1, 0.5 ], sprite3, 15 ],
+            [[ 0.90, 0.05, 0.5 ], sprite1, 10 ],
+            [[ 0.85, 0, 0.5 ], sprite5, 8 ],
+            [[ 0.80, 0, 0.5 ], sprite4, 5 ]
+        ];
+        for ( var i = 0; i < parameters.length; i ++ ) {
+            var color = parameters[ i ][ 0 ];
+            var sprite = parameters[ i ][ 1 ];
+            var size = parameters[ i ][ 2 ]*Math.random()*2;
+            materials[ i ] = new THREE.PointsMaterial( { size: size, map: sprite, blending: THREE.AdditiveBlending, depthTest: false, transparent: true } );
+            materials[ i ].color.setHSL( color[ 0 ], color[ 1 ], color[ 2 ] );
+            var particles = new THREE.Points( geometry, materials[ i ] );
+            particles.rotation.x = Math.random() * 6;
+            particles.rotation.y = Math.random() * 6;
+            particles.rotation.z = Math.random() * 6;
+            scene.add( particles );
+        }
+        /*白细胞初始化结束*/
+
+
+
+        /* 光源设置 */
+        //点光源
+        var point = new THREE.PointLight(0xffffff);
+        point.castShadow = true;
+        point.position.set(0, 100, 0); //点光源位置
+        scene.add(point); //点光源添加到场景中
+        //环境光
+        var ambient = new THREE.AmbientLight(0x444444);
+        scene.add(ambient);
+
+
+        var waterGeometry = new THREE.PlaneBufferGeometry( 500, 500 );
+        var params = {
+            color: '#ff9ea2',
+            scale: 4,
+            flowX: 1,
+            flowY: 1
+        };
+        water = new THREE.Water( waterGeometry, {
+            color: params.color,
+            scale: params.scale,
+            flowDirection: new THREE.Vector2( params.flowX, params.flowY ),
+            textureWidth: 1024,
+            textureHeight: 1024
+        } );
+
+        water.position.y = 1;
+        water.rotation.x = Math.PI * - 0.5;
+        scene.add( water );
+
+        /**
+         * 透视投影相机设置
+         */
+        var width = window.innerWidth*0.8; //窗口宽度
+        var height = window.innerHeight*0.9; //窗口高度
+        /**透视投影相机对象*/
+        camera = new THREE.PerspectiveCamera(30, width / height, 1, 1000);
+
+
+
+        /* 创建渲染器对象 */
+        renderer = new THREE.WebGLRenderer({ antialias: true,logarithmicDepthBuffer:true });
+        renderer.setSize(width, height);//设置渲染区域尺寸
+        renderer.setClearColor(0x8b0000, 1); //设置背景颜色
+        renderer.domElement.className = 'canvas';
+        renderer.shadowMapEnabled = true;
+        document.body.appendChild(renderer.domElement); //body元素中插入canvas对象
+
+    };
+
+
+    //
+    //定义键盘按键事件
+    function setKeyEvents(){
+        console.log('testing the set key events...')
+        document.addEventListener('keydown',function(e){
+            console.log('testing the add EventListner..')
+            if(gameOver)
+                return;
+            velocity.x=front.x*25;
+            velocity.y = -10;
+            velocity.z=front.z*25;
+            switch (e.key) {
+                case 'w':player.setLinearVelocity(velocity);
+                    break;
+                case 'a':player.setLinearVelocity(velocity.clone().cross(new THREE.Vector3(0,-1,0)));
+                    break;
+                case 's':velocity.x*=-1;velocity.z*=-1;player.setLinearVelocity(velocity);
+                    break;
+                case 'd':player.setLinearVelocity(velocity.clone().cross(new THREE.Vector3(0,1,0)));
+                    break;
+                case 'b':document.getElementById('backpack').style.display='inline';
+                         document.getElementById('mask').style.display='inline';break;
+                default:document.exitPointerLock();console.log("default")
+            }
+        }, false);
+
+        window.addEventListener('keyup',function(e){
+            if(gameOver)
+                return;
+            switch (e.key) {
+                case 'w':
+                case 'a':
+                case 's':
+                case 'd':player.setLinearVelocity(stop_velocity);break;
+                case 'b':document.getElementById('backpack').style.display='none';
+                         document.getElementById('mask').style.display='none';
+                break;
+                default:console.log("default")
+            }
+        });
+    }
+
+    //鼠标事件
+    function setMouseEvents(){
+        window.addEventListener('click',function (e) {
+            if(gameOver)
+                return;
+            if(quizTaking)
+                return;
+            document.body.requestPointerLock();
+            var raycaster = new THREE.Raycaster();
+
+            var mouse = new THREE.Vector2();
+            var ev = e || window.event;
+            // 通过鼠标点击位置,计算出 raycaster 所需点的位置,以屏幕为中心点,范围 -1 到 1
+            mouse.x = 0;
+            mouse.y = 0;
+            console.log(mouse);
+            //通过鼠标点击的位置(二维坐标)和当前相机的矩阵计算出射线位置
+            raycaster.setFromCamera(mouse, camera);
+            // 获取与raycaster射线相交的数组集合，其中的元素按照距离排序，越近的越靠前
+            var intersects = raycaster.intersectObjects(scene.children);
+            for(let i = 0; i < intersects.length;i++){
+                if(intersects[i].object.oType == 'virus'){
+                    console.log(intersects[i].object);
+                    let sendMsg = {
+                        'cellType':'T',
+                        'userId':playerId,
+                        'virusId': intersects[i].object.name.split("@")[1],
+                        'roomId':roomId
+                    };
+                    console.log(sendMsg);
+                    stompClient.send("/app/clickVirus", {},
+                        JSON.stringify(sendMsg));
+                    return;
+                }
+
+            }
+            //console.log(intersects);
+            //返回选中的对象数组
+            //return intersects;
+        });
+
+        document.addEventListener('pointerlockchange',function (e) {
+            if(gameOver)
+                return;
+            console.log('changed')
+        });
+
+        document.addEventListener('mousemove',function (event) {
+            if(gameOver)
+                return;
+            if (document.pointerLockElement === document.body) {
+                let movementX = event.movementX || event.mozMovementX || event.webkitMovementX || 0;
+                let movementY = event.movementY || event.mozMovementY || event.webkitMovementY || 0;
+                camera_parent.rotation.x -= movementY * 0.004;
+                playerRotation.y -= movementX * 0.004;
+                //console.log(box_rotation);
+                if(playerRotation.y > Math.PI )
+                    playerRotation.y -= Math.PI*2;
+                if(playerRotation.y < -Math.PI)
+                    playerRotation.y += Math.PI*2;
+                //console.log(box_rotation);
+                camera.getWorldDirection(front);
+                // 这一步的目的是什么
+//                if(camera_parent.rotation.x > Math.PI / 2)
+//                    camera_parent.rotation.x -= Math.PI;
+//                if(camera_parent.rotation.x < -Math.PI / 2)
+//                    camera_parent.rotation.x += Math.PI;
+                camera_parent.rotation.x = Math.max(-Math.PI / 2, Math.min(0, camera_parent.rotation.x));
+            }
+        });
+
+    }
+
+    //load floor mesh
+    loadFloor=function () {
+        var ready = false;
+        var myImage = new Image();
+        let arr,ccc;
+        myImage.src = "../objects/terrain.jpg";
+        myImage.onload = function(){
+            var canvas = document.createElement('canvas');
+            ccc= canvas;
+            canvas.height = 250;
+            canvas.width = 250;
+            var ctx=canvas.getContext("2d");
+            ctx.drawImage(myImage,0,0,250,250);
+            arr = ctx.getImageData(0,0,250,250).data;
+
+            loader = new THREE.TextureLoader();
+
+            // Materials
+            ground_material = Physijs.createMaterial(
+                new THREE.MeshLambertMaterial({ map: loader.load( '../images/forest_floor.jpg' ) }),
+                .8, // high friction
+                .4 // low restitution
+            );
+            ground_material.map.wrapS = ground_material.map.wrapT = THREE.RepeatWrapping;
+            ground_material.map.repeat.set( 2.5, 2.5 );
+
+
+            ground_geometry = new THREE.PlaneGeometry( 500, 500, 250, 250 );
+            let count = 0;
+            for ( var i = 0; i < ground_geometry.vertices.length; i++ ) {
+                var vertex = ground_geometry.vertices[i];
+                count++;
+                if(((vertex.x+250)/2*250+(250-vertex.y)/2)*4>=250*250*4)
+                    vertex.z = 0;
+                else
+                    vertex.z = arr[((vertex.x+250)/2*250+(250-vertex.y)/2)*4]*0.5;
+                //console.log(arr[((vertex.x+250)/2*250+(250-vertex.y)/2)*4]*0.5);
+                //vertex.z = NoiseGen.noise( vertex.x / 10, vertex.y / 10 ) * 2;
+
+                //console.log(vertex.x,vertex.y);
+            }
+            console.log(count);
+            ground_geometry.computeFaceNormals();
+            ground_geometry.computeVertexNormals();
+
+            // If your plane is not square as far as face count then the HeightfieldMesh
+            // takes two more arguments at the end: # of x faces and # of y faces that were passed to THREE.PlaneMaterial
+            ground = new Physijs.HeightfieldMesh(
+                ground_geometry,
+                ground_material,
+                0, // mass
+                250,
+                250
+            );
+
+            ground.position.set(0, -20, 0);
+            ground.rotation.x = Math.PI / -2;
+            ground.receiveShadow = true;
+            scene.add( ground );
+        };
+    };
+
+    //load ceiling
+    loadCeil = function(){
+
+        var ready = false;
+        var myImage = new Image();
+        let arr, ccc;
+        myImage.src = "../objects/terrain.jpg";
+        myImage.onload = function () {
+            var canvas = document.createElement('canvas');
+            ccc = canvas;
+            canvas.height = 250;
+            canvas.width = 250;
+            var ctx = canvas.getContext("2d");
+            ctx.drawImage(myImage, 0, 0, 250, 250);
+            arr = ctx.getImageData(0, 0, 250, 250).data;
+
+            loader = new THREE.TextureLoader();
+
+            // Materials
+            ground_material = Physijs.createMaterial(
+                new THREE.MeshLambertMaterial({map: loader.load('../images/forest_floor.jpg')}),
+                .8, // high friction
+                .4 // low restitution
+            );
+            ground_material.map.wrapS = ground_material.map.wrapT = THREE.RepeatWrapping;
+            ground_material.map.repeat.set(2.5, 2.5);
+
+
+            ground_geometry = new THREE.PlaneGeometry(500, 500, 250, 250);
+            let count = 0;
+            for (var i = 0; i < ground_geometry.vertices.length; i++) {
+                var vertex = ground_geometry.vertices[i];
+                count++;
+                if (((vertex.x + 250) / 2 * 250 + (250 - vertex.y) / 2) * 4 >= 250 * 250 * 4)
+                    vertex.z = 0;
+                else
+                    vertex.z = arr[((vertex.x + 250) / 2 * 250 + (250 - vertex.y) / 2) * 4] * 0.5;
+                //console.log(arr[((vertex.x+250)/2*250+(250-vertex.y)/2)*4]*0.5);
+                //vertex.z = NoiseGen.noise( vertex.x / 10, vertex.y / 10 ) * 2;
+
+                //console.log(vertex.x,vertex.y);
+            }
+            console.log(count);
+            ground_geometry.computeFaceNormals();
+            ground_geometry.computeVertexNormals();
+
+            // If your plane is not square as far as face count then the HeightfieldMesh
+            // takes two more arguments at the end: # of x faces and # of y faces that were passed to THREE.PlaneMaterial
+            ground = new Physijs.HeightfieldMesh(
+                ground_geometry,
+                ground_material,
+                0, // mass
+                250,
+                250
+            );
+            ground.position.set(0, 200, 0);
+            ground.rotation.x = Math.PI / -2;
+            ground.rotation.y = Math.PI;
+            ground.receiveShadow = true;
+            scene.add(ground);
+        };
+
+    };
+
+    // load player
+    loadPlayer=function (msg,modelId) {
+
+        var loader = new THREE.TextureLoader();
+        //create a outer box
+        var box_geometry = new THREE.SphereGeometry( 1.5, 1.5, 1.5 );
+
+        player = new Physijs.SphereMesh(
+            box_geometry,
+            new THREE.MeshBasicMaterial({color: 0x000000})
+        );
+        player.material.visible = false;
+        player.collisions = 0;
+
+        player.position.set(0,25,0);
+
+        player.rotation.set(0,0,0);
+        //player.castShadow = true;
+        player.name = playerName;
+
+        //place model inside the box
+        let player1,player2;
+        let objLoader_active = new THREE.OBJLoader();
+        let mtlLoader_active = new THREE.MTLLoader();
+        let model_index = modelId;
+        //let model_index = 7;
+        mtlLoader_active.load('../models/'+models[model_index]+'.mtl', function(materials_active) {
+            objLoader_active.setMaterials(materials_active);
+            objLoader_active.load('../models/'+models[model_index]+'.obj', function(obj_active) {
+                obj_active.scale.set(0.3*model_size[model_index],0.3*model_size[model_index],0.3*model_size[model_index]);
+                obj_active.castShadow = true;
+                obj_active.receiveShadow=true;
+                player1 = obj_active;
+                player.add(player1);
+                camera.position.set(0, -30, 15); //设置初始相机位置
+                camera.lookAt(player.position);
+                camera_parent = new THREE.Mesh();
+                player.add(camera_parent);
+                camera_parent.add(camera);
+                //camera.add();
+                //front=box.position-camera.position;
+                camera.getWorldDirection(front);
+                console.log(msg);
+                player.position.set(msg['x'],100,msg['z']);
+                player.rotation.set(msg['rotation'],0,0);
+                scene.add( player );
+                modelLoader.loadFinish();
+            });
+
+        });
+
+        player.addEventListener( 'collision', function( other_object, relative_velocity, relative_rotation, contact_normal ) {
+            if(other_object.oType==="virus"){
+                //console.log("hit virus");
+                //不一定伤害固定
+                var damage=10;
+                // vitality-=damage;
+                // var vitality_css=vitality+"%";
+                // document.documentElement.style.setProperty('--vitality',vitality_css);
+
+                let sendMsg = {
+                    'dropNum':damage,
+                    'roomId': roomId,
+                };
+                stompClient.send("/app/dropHp", {},
+                    JSON.stringify(sendMsg));
+            }
+        });
+
+    };
+
+    //load other players
+    let a3;
+    loadOtherPlayers = function(msg,userSet){
+        for(let i in msg){
+            if(i==playerName)
+                continue;
+            let pn = i.split("@")[1];
+            let mi;
+            for (let j = 0;j<userSet.length;j++){
+                if(userSet[j].id == parseInt(pn,16))
+                    mi = userSet[j].modelId;
+            }
+
+            var obj = msg[i];
+            let p = new Player();
+
+            //create a outer box
+            let box;
+            var box_geometry = new THREE.BoxGeometry( 5, 5, 5 );
+
+            box = new Physijs.BoxMesh(
+                box_geometry,
+                new THREE.MeshBasicMaterial({color: 0x000000}),0
+            );
+            box.material.visible = false;
+            box.collisions = 0;
+            box.position.set(obj['x'],100,obj['z']);
+            box.rotation.set(obj['rotation'],0,0);
+            //box.castShadow = true;
+            scene.add( box );
+            box.name = i;
+            p.position.set(obj['x'],100,obj['z']);
+            p.rotation.set(obj['rotation'],0,0);
+            box.__dirtyPosition = true;
+            box.__dirtyRotation = true;
+            p.rigidBody = box;
+            players.set(i, p);
+            let objLoader_active = new THREE.OBJLoader();
+            let mtlLoader_active = new THREE.MTLLoader();
+            let model_index = mi;
+            mtlLoader_active.load('../models/'+models[model_index]+'.mtl', function(materials_active) {
+                objLoader_active.setMaterials(materials_active);
+                objLoader_active.load('../models/'+models[model_index]+'.obj', function(obj_active) {
+                    obj_active.scale.set(0.3*model_size[model_index],0.3*model_size[model_index],0.3*model_size[model_index]);
+                    box.add(obj_active);
+                    p.model = obj_active;
+                    modelLoader.loadFinish();
+                });
+            });
+
+            //load user id text
+            geometry = new THREE.TextGeometry(nickName, {
+                font: idFont,
+                size: 2,
+                height: 0.2/*,
+                curveSegments: 12,
+                bevelEnabled: true,
+                bevelThickness: 10,
+                bevelSize: 8,
+                bevelSegments: 5*/
+            });
+            //创建法向量材质
+            var meshMaterial = new THREE.MeshNormalMaterial({
+                flatShading: THREE.FlatShading,
+                transparent: true,
+                opacity: 0.9
+            });
+            var mesh = new THREE.Mesh(geometry, meshMaterial);
+            box.add(mesh);
+            mesh.position.set( 0,0,0);
+            mesh.geometry.center();
+            mesh.position.y = 12;
+
+        }
+    };
+
+
+    //load NPC
+    loadNPC=function(msg){
+
+        for(let i in msg){
+            var obj = msg[i];
+            //create a outer box
+            let npc = new NPC();
+            let box;
+            var box_geometry = new THREE.BoxGeometry( 5, 5, 5 );
+            box = new Physijs.BoxMesh(
+                box_geometry,
+                new THREE.MeshBasicMaterial({color: 0x000000}),0
+            );
+            box.material.visible = false;
+            box.collisions = 0;
+            box.position.set(obj['x'],40,obj['z']);
+            box.rotation.set(0,obj['rotation'],0);
+            //box.castShadow = true;
+            scene.add( box );
+            box.name = i;
+            box.oType = 'virus';
+            npc.rigidBody = box;
+            npc.position.set(obj['x'],40,obj['z']);
+            npc.rotation.set(0,obj['rotation'],0);
+            box.__dirtyPosition = true;
+            box.__dirtyRotation = true;
+            npcs.set(i, npc);
+            let objLoader_active = new THREE.OBJLoader();
+            let mtlLoader_active = new THREE.MTLLoader();
+            let model_index = 6;
+            mtlLoader_active.load('../models/'+models[model_index]+'.mtl', function(materials_active) {
+                objLoader_active.setMaterials(materials_active);
+                objLoader_active.load('../models/'+models[model_index]+'.obj', function(obj_active) {
+                    obj_active.scale.set(0.3*model_size[model_index],0.3*model_size[model_index],0.3*model_size[model_index]);
+                    npc.model = obj_active;
+                    box.add(obj_active);
+                    modelLoader.loadFinish();
+                });
+            });
+        }
+
+    };
+
+    function update() {
+        if(gameOver)
+            return;
+        let tmp = (new Date()).valueOf();
+        let gap = tmp - frameTime;
+
+        frameTime = tmp;
+
+        if(timeGap == 0){
+
+            rate= 0 ;
+        }
+        else
+            rate = gap / timeGap;
+        timeGap -= gap;
+        if(rate<0)
+            rate = 0;
+        npcs.forEach(function(npc){
+            npc.update();
+
+        });
+        players.forEach(function(players){
+            players.update();
+
+        });
+        webMsg['x'] = player.position.x;
+        webMsg['y'] = player.position.y;
+        webMsg['z'] = player.position.z;
+        webMsg['rotation'] = playerRotation.y;
+        myCount++;
+        if(myCount==5){
+            stompClient.send("/app/updatePosition", {},
+                JSON.stringify(webMsg));
+            myCount = 0;
+        }
+        /*白细胞位置处理*/
+        var time = Date.now() * 0.00005;
+        for ( var i = 0; i < scene.children.length; i ++ ) {
+            var object = scene.children[ i ];
+            if ( object instanceof THREE.Points ) {
+                object.rotation.y = time*0.3 * ( i < 4 ? i + 1 : - ( i + 1 ) );
+                //object.rotation.x = time * ( i < 4 ? i + 1 : - ( i + 1 ) );
+                //object.rotation.z = time * ( i < 4 ? i + 1 : - ( i + 1 ) );
+            }
+        }
+        for ( var i = 0; i < materials.length; i ++ ) {
+            var color = parameters[ i ][ 0 ];
+            var h = ( 360 * ( color[ 0 ] + time ) % 360 ) / 360;
+            materials[ i ].color.setHSL( h, color[ 1 ], color[ 2 ] );
+        }
+    }
+
+
+    //执行渲染操作   指定场景、相机作为参数
+    let clock = new THREE.Clock();
+    function render() {
+        player.__dirtyRotation=true;
+        player.__dirtyPosition=true;
+        if(player.position.y < 0)
+            player.position.y = 0;
+        player.setAngularVelocity(new THREE.Vector3(0, 0, 0));
+        //
+        scene.simulate(undefined,1);
+        //camera.lookAt(box.position);
+        player.rotation.setFromVector3(playerRotation);
+        update();
+        renderer.render(scene,camera);//执行渲染操作
+        requestAnimationFrame(render);//请求再次执行渲染函数render
+    }
+    function createParticles(){
+
+        var material = new THREE.ParticleBasicMaterial();
+        for(var x = -5 ; x < 5 ; x ++){
+            for(var y = -5 ; y < 5 ; y ++){
+                //手动创建一个粒子，只需传递一个材质即可。还材质可以是 ParticleBasicMaterial 或者 ParticleProgramMaterial材质
+                var particle = new THREE.Particle(material);
+                particle.position.set(x*10,y*10,0);
+                scene.add(particle);
+            }
+        }
+    }
+
+    afterModelInitialized = function(){
+        setKeyEvents();
+        setMouseEvents();
+        webMsg = {
+            'x': parseInt(1),
+            'y': parseInt(1),
+            'z': parseInt(1),
+            'rotation':233,
+            'objectId': playerId,
+        };
+        console.log('models Loaded!');
+        stompClient.send("/app/loadFinish", {},
+            JSON.stringify(webMsg));
+
+    };
+
+
+    let myCount = 0;
+
+
+    var rootPath = "http://122.51.160.221:8080";
+    // var rootPath = "http://localhost:8080";
+    var socket = null;
+    var stompClient = null;
+    let aaaaa;
+    socket = new SockJS(rootPath + '/ws');
+    stompClient = Stomp.over(socket);
+    var webMsg;
+    // stompClient.debug = true;
+    let initialized = false;
+
+
+
+
+    initScene();
+    loadFloor();
+    //loadCeil();
+
+    var font_loader = new THREE.FontLoader();
+    font_loader.load( '../fonts/helvetiker_bold.typeface.json', function ( font ) {
+        idFont = font;
+        stompClient.connect({}, function (frame) {
+            webMsg = {
+                'x': parseInt(1),
+                'y': parseInt(1),
+                'z': parseInt(1),
+                'rotation':233,
+                'objectId': playerId,
+                'roomId':roomId
+            };
+
+            stompClient.subscribe('/topic/'+roomId+'/startGame',
+                function(msg){
+                    console.log(msg);
+                    msg = JSON.parse(msg.body);
+                    console.log(msg.content);
+
+                    if(msg.content=='all users load finish'){
+                        render();
+                        return;
+                    }
+                    if(initialized)
+                        return;
+                    initialized = true;
+                    aaaaa= msg;
+                    let modelNum = 0;
+                    let playerMsg;
+                    packId = msg['content']['pack']['id'];
+                    //userset = msg['content']['userSet'];
+                    let userSet=msg['content']['userSet'];
+                    let user_num=userSet.length;
+                    let modelId;
+                    console.log("user set is",user_num);
+                    for(var i=0;i<user_num;i++){
+                        if(userSet[i]['id']==playerId){
+                            nickName=userSet[i]['username'];
+                            modelId = userSet[i]['modelId'];
+                            break;
+                        }
+                    }
+
+                    for(let tmp in msg['content']['cellPositionMap']){
+                        if(tmp == playerName)
+                            playerMsg = msg['content']['cellPositionMap'][tmp];
+                        modelNum++;
+                    }
+                    //console.log(msg);
+                    //console.log(playerMsg['x']);
+                    for(let tmp in msg['content']['virusPositionMap']){
+                        modelNum++;
+                    }
+                    if(modelNum==0)
+                        return;
+                    modelLoader = new Loader(modelNum,afterModelInitialized);
+                    console.log(modelLoader);
+                    loadPlayer(playerMsg,modelId);
+                    loadOtherPlayers(msg['content']['cellPositionMap'],userSet);
+                    loadNPC(msg['content']['virusPositionMap']);
+                }
+            );
+            stompClient.subscribe('/topic/'+roomId+'/gameOver',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    gameOverController(msg);
+                }
+            );
+            stompClient.send("/app/connectToServer", {},
+                JSON.stringify(webMsg));
+
+            function gameOverController(msg){
+                gameOver = true;
+                document.getElementById('backpack').style.display='none';
+                document.exitPointerLock();
+                document.getElementById('game-over-board').style.display='inline';
+                document.getElementById('mask').style.display='inline';
+
+                console.log(msg);
+                if(msg.content == true){
+                    document.getElementById('victory').style.display='block';
+                }
+                else{
+
+                    document.getElementById('defeat').style.display='block';
+                }
+//            let sendMsg = {
+//                'answer':'B',
+//                'questionId': msg.content.id
+//            };
+//            stompClient.send("/app/answerQuestion", {},
+//                JSON.stringify(sendMsg));
+
+            }
+
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms)
+                )
+            }
+
+            const bulletin = document.getElementById("message");
+            const bulletin_content = document.getElementById("responseMsg");
+
+            function showMessage(type,msg){
+                if(type){
+                    bulletin.style.backgroundColor="green";
+                }
+                else {
+                    bulletin.style.backgroundColor="red";
+                }
+                bulletin_content.innerText=msg;
+                bulletin.style.display="block";
+                sleep(2000).then(()=>{
+                    bulletin.style.display="none";
+                })
+            }
+
+
+            // 收到问题
+            let quizChart=document.getElementById('quiz');
+            let btSubmit=document.getElementById('btSubmit');
+            let currentQuestionId;
+
+            let getQuestionURL= '/topic/'+playerId+'/getRandomQuestion';
+            stompClient.subscribe(getQuestionURL,
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log("find question",msg);
+                    currentQuestionId=msg.content.id;
+                    //fill in question
+                    document.getElementById("answerA").innerText=msg.content.choiceA;
+                    document.getElementById("answerB").innerText=msg.content.choiceB;
+                    document.getElementById("answerC").innerText=msg.content.choiceC;
+                    document.getElementById("answerD").innerText=msg.content.choiceD;
+                    document.getElementById("question").innerText=msg.content.stem;
+                    document.getElementById("keywords").innerText=msg.content.keyword;
+
+                    quizTaking=true; //unable screen get pointer lock
+                    quizChart.style.display='inline';//display question
+                    document.exitPointerLock();
+                    quizChart.requestPointerLock();//get focus
+                }
+            );
+
+            //回答问题
+            btSubmit.onclick=function(e){
+                console.log("clicked:");
+                var answers=document.getElementsByName('answer');
+                var answer;
+                for(let i=0; i<answers.length; i++){
+                    if(answers[i].checked){
+                        answer=answers[i].value;
+                    }
+                }
+                let sendMsg = {
+                    'userId':playerId,
+                    'answer':answer,
+                    'questionId': currentQuestionId
+                };
+                console.log("my answer is:",sendMsg);
+                stompClient.send("/app/answerQuestion", {},
+                    JSON.stringify(sendMsg));
+
+                quizTaking=false;
+                quizChart.style.display='none';
+                document.body.requestPointerLock();
+            };
+
+            stompClient.subscribe('/topic/'+roomId+'/getRandomKnowledge',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log("find knowledgePoint");
+                    showMessage(true,"获得关键线索，请按[b]打开背包查看");
+                }
+
+
+            );
+            stompClient.subscribe('/topic/'+roomId+'/findCellInfoByType',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log("find info");
+                    showMessage(true,"读取到细胞核信息，请按[b]打开背包查看");
+                }
+            );
+
+            let correctAnswerURL='/topic/'+playerId+'/correctAnswer';
+            stompClient.subscribe(correctAnswerURL,
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    showMessage(true,"回答正确，好像变得更强大了");
+                }
+            );
+
+            let wrongAnswerURL='/topic/'+playerId+'/wrongAnswer';
+            stompClient.subscribe(wrongAnswerURL,
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    showMessage(false,"回答错误，就这？");
+                }
+            );
+
+
+
+            stompClient.subscribe('/topic/'+roomId+'/updatePack',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log("update pack",msg.content);
+                    msg = msg.content;//[roomId.toString()];
+                    CellInfo.innerHTML='';
+                    KnowledgePoints.innerHTML='';
+                    var cellInfoSet=msg.cellInfoSet;
+                    var cellInfoLength=cellInfoSet.length;
+                    var knowledgeSet=msg.knowledgeSet;
+                    var knowledgePointLength=knowledgeSet.length;
+                    var choiceQuestionSet = msg.choiceQuestionSet;
+                    var choiceQuestionLength = choiceQuestionSet.length;
+                    for(var i=0;i<cellInfoLength;i++){
+                        //console.log("info:",cellInfoSet[i].info);
+                        let insert=document.createElement("p");
+                        insert.innerText=cellInfoSet[i].info;
+                        CellInfo.appendChild(insert);
+
+                    }
+                    for(i=0;i<knowledgePointLength;i++){
+                        //console.log("knowledge:",knowledgeSet[i].content);
+                        let insert=document.createElement("p");
+                        insert.innerText=knowledgeSet[i].content;
+                        KnowledgePoints.appendChild(insert);
+                    }
+                    process=(choiceQuestionLength+knowledgePointLength+cellInfoLength)/scoreGoal*100;
+                    if(process>100)
+                        process = 100;
+                    var process_css=process+"%";
+                    document.documentElement.style.setProperty('--process',process_css);
+
+                }
+            );
+
+            stompClient.subscribe('/topic/'+roomId+'/updateHp',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log(msg);
+                    vitality=msg.content;
+                    var vitality_css=vitality+"%";
+                    document.documentElement.style.setProperty('--vitality',vitality_css);
+                }
+            );
+
+
+
+            stompClient.subscribe('/topic/'+roomId+'/updateCellAndVirus',
+                function(msg){
+                    //console.log(msg.body);
+                    //console.log(webMsg);
+                    msg = JSON.parse(msg.body);
+                    console.log(msg);
+                    let modelNum = 0;
+                    let playerMsg;
+                    let time = (new Date()).valueOf();
+                    timeGap = time-timer;
+                    timer = time;
+
+                    for(let tmp in msg['content']['cellPositionMap']){
+                        if(tmp == playerName)
+                            continue;
+                        let p = msg['content']['cellPositionMap'][tmp];
+                        players.get(tmp).nextPosition.set(p['x'],p['y'],p['z']);
+                        players.get(tmp).nextRotation.set(0,p['rotation'],0);
+                        players.get(tmp).startMoving = true;
+
+                    }
+                    //console.log(msg);
+                    //console.log(playerMsg['x']);
+                    for(let tmp in msg['content']['virusPositionMap']) {
+                        let p = msg['content']['virusPositionMap'][tmp];
+                        npcs.get(tmp).nextPosition.set(p['x'], p['y'], p['z']);
+                        npcs.get(tmp).nextRotation.set(p['rotation'] / Math.PI,p['rotationY'] /Math.PI,p['rotationZ']/Math.PI);
+                        npcs.get(tmp).startMoving = true;
+                    }
+                }
+            );
+        });
+    });
+
+
+
+    //createParticles();
+    //var helper = new THREE.CameraHelper( camera );
+    //scene.add( helper );
+
+
+
+
+
+</script>
+</body>
+</html>

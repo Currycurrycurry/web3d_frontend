@@ -3,7 +3,7 @@ import api from '../../api'
 
 const user = {
     state: {
-        user_id: '-1',
+        user_id: -1,
         token: Cookies.get('token'),
         username: '',
         email: '',
@@ -11,7 +11,8 @@ const user = {
         age: '',
         gender: '',
         model: 0,
-        region: ''
+        region: '',
+        isadmin: false
     },
 
     mutations: {
@@ -39,6 +40,9 @@ const user = {
         SET_AGE: (state, age) => {
             state.age = age
         },
+        SET_IS_ADMIN: (state, isadmin) => {
+            state.isadmin = isadmin
+        },
         LOGIN_SUCCESS: () => {
             console.log('login success')
         },
@@ -52,6 +56,7 @@ const user = {
             state.fullName = '';
             state.model = 0;
             state.age = '';
+            state.isadmin = false;
         },
         SET_TOKEN: (state, token) => {
             state.token = token
@@ -59,6 +64,9 @@ const user = {
 
     },
     actions: {
+        logout({commit}) {
+            commit('LOGOUT_USER')
+        },
         setUserInfo ({commit}) {
             return new Promise((resolve, reject) => {
                 api.getUserInfo().then(response => {
@@ -71,6 +79,17 @@ const user = {
                     commit('SET_FULLNAME', response.data.content['fullname'])
                     commit('SET_AGE', response.data.content['age'])
                     commit('SET_TOKEN', Cookies.get('token'))
+                    resolve(response)
+                }).catch(error => {
+                    console.log(error.response)
+                    reject(error)
+                })
+            })
+        },
+        setIsAdmin({commit}, user_id) {
+            return new Promise((resolve, reject) => {
+                api.getIsAdmin({userId: user_id}).then(response => {
+                    commit('SET_IS_ADMIN', response.data.content)
                     resolve(response)
                 }).catch(error => {
                     console.log(error.response)

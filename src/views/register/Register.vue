@@ -25,8 +25,8 @@
 								<el-option label="神经元细胞" value="3"></el-option>
 								<el-option label="红血球" value="4"></el-option>
 								<el-option label="抗体" value="5"></el-option>
-								<el-option label="病毒" value="6"></el-option>
-								<el-option label="肿瘤细胞" value="7"></el-option>
+<!--								<el-option label="病毒" value="6"></el-option>-->
+<!--								<el-option label="肿瘤细胞" value="7"></el-option>-->
 							</el-select>
 						</el-form-item>
 

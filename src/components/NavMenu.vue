@@ -10,18 +10,19 @@
             </el-submenu>
         </el-menu-item>
         <el-menu-item index="/models">角色图鉴</el-menu-item>
-        <el-menu-item index="/chatRoom">聊天室</el-menu-item>
-        <el-menu-item index="/admin" v-if="is_admin">管理后台</el-menu-item>
-        <el-menu-item ><i class="el-icon-setting" @click="logout()"></i>{{name}}</el-menu-item>
+<!--        <el-menu-item index="/chatRoom">聊天室</el-menu-item>-->
+        <el-menu-item index="/admin" v-if="isadmin">管理后台</el-menu-item>
+        <el-menu-item ><i class="el-icon-setting" @click="logout()"></i>{{username}}</el-menu-item>
     </el-menu>
 
 </template>
 
 <script>
-    import api from '../api'
+    // import api from '../api'
     import store from "../store/store";
     import router from '../router'
     import Cookies from 'js-cookie'
+    import {mapGetters} from 'vuex'
 
     export default {
         name: "NavMenu",
@@ -29,33 +30,55 @@
             return {
                 activeIndex: '/hall',
                 name: store.getters.username,
-                is_admin: false
+
             };
         },
-        mounted() {
-            this.isadmin()
+        created() {
+            this.getisadmin()
+        },
+        computed: {
+            ...mapGetters([
+                'isadmin',
+                'user_id',
+                'username'
+            ])
         },
         methods: {
             handleSelect(key, keyPath) {
                 console.log(key, keyPath);
             },
-            isadmin() {
+            getisadmin() {
                 console.log('enter isadmin...')
                 let id = store.getters.user_id;
-                api.getIsAdmin({userId: id}).then(response => {
-                    this.is_admin = response.data.content;
-                }).catch(err => {
-                    console.log(err.response);
-                })
-                console.log("is admin :" + this.is_admin)
+                if (id === '-1') {
+                    store.dispatch('setUserInfo').then(() => {
+                        store.dispatch('setIsAdmin', this.user_id).then(() => {
+                            console.log('set admin and userinfo  ok')
+                        })
+                    })
+                } else {
+                    store.dispatch('setIsAdmin', id).then( () => {
+                        console.log('set admin ok')
+                    })
+                }
+
+                // api.getIsAdmin({userId: id}).then(response => {
+                //     this.is_admin = response.data.content;
+                // }).catch(err => {
+                //     console.log(err.response);
+                // })
+                // console.log("is admin :" + this.is_admin)
             },
             logout() {
                 console.log(store.getters.user_id);
-                router.push('/pages/Login')
-                Cookies.set('token','');
-                console.log('cookie token is ' + Cookies.get('token'));
-                this.$store.commit('LOGOUT_USER');
-
+                store.dispatch('logout').then(()=>{
+                    Cookies.set('token','');
+                    Cookies.set('userID', '');
+                    Cookies.set('roomID', '');
+                    Cookies.set('')
+                    console.log('cookie token is ' + Cookies.get('token'));
+                    router.push('/pages/Login')
+                })
             }
         }
     }

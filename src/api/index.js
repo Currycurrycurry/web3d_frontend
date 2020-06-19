@@ -1,9 +1,9 @@
 import axios from 'axios'
 // import store from '../store/store'
-// const baseURL = 'http://122.51.160.221:8080'
-// const gameURL = 'http://122.51.160.221:8080'
-const baseURL = 'http://localhost:8080' //http://122.51.160.221:8080/welcome
-const gameURL = 'http://localhost:8080'
+const baseURL = 'http://122.51.160.221:8080'
+const gameURL = 'http://122.51.160.221:8080'
+// const baseURL = 'http://localhost:8080' //http://122.51.160.221:8080/welcome
+// const gameURL = 'http://localhost:8080'
 axios.defaults.timeout = 10000
 axios.defaults.baseURL = baseURL
 axios.defaults.withCredentials = true
@@ -122,6 +122,10 @@ function getRooms() {
     return getNoArgs('/getRoomInfo')
 }
 
+function cleanCurrentGame(params) {
+    return post('/cleanCurrentGame', params)
+}
+
 
 export default {
     // urls
@@ -150,6 +154,10 @@ export default {
 
     createRoom,
     getRooms,
+
+    cleanCurrentGame,
+
+
 
 
 

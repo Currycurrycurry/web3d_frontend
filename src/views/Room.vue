@@ -10,8 +10,8 @@
                     <el-input v-model="form.roomName" autocomplete="off"></el-input>
                 </el-form-item>
                 <el-form-item label="房间人数" :label-width="formLabelWidth">
-                    <el-select v-model="form.userNum" placeholder="请选择房间人数上限">
-                        <el-option :label="index" :value="index" v-for="(index) in 5" v-bind:key="index"></el-option>
+                    <el-select v-model="form.userNum" placeholder="请选择房间人数">
+                        <el-option :label="index" :value="index" v-for="(index) in [2,3,4,5]" v-bind:key="index"></el-option>
                     </el-select>
                 </el-form-item>
             </el-form>
@@ -49,7 +49,7 @@
             </el-table-column>
             <el-table-column
                     label="房间名称"
-                    width="180">
+                    width="100">
                 <template slot-scope="scope">
                     <el-popover trigger="hover" placement="top">
                         <p>房间ID: {{ scope.row.roomID }}</p>
@@ -62,17 +62,17 @@
             </el-table-column>
             <el-table-column
                     label="房间人数"
-                    width="180">
+                    width="150">
                 <template slot-scope="scope">
                     <i class="el-icon-user"></i>
-                    <span style="margin-left: 10px">{{ scope.row.playerNum }} / 5</span>
+                    <span style="margin-left: 10px">{{ scope.row.playerNum }} / {{scope.row.maxPlayNum}}</span>
                 </template>
             </el-table-column>
             <el-table-column label="操作">
                 <template slot-scope="scope">
                     <el-button
                             size="mini"
-                            @click="enterCertainRoom(scope.row.roomID)">加入房间</el-button>
+                            @click="enterCertainRoom(scope.row.roomID)" :disabled="scope.row.disabled">加入房间</el-button>
                 </template>
             </el-table-column>
             <el-table-column
@@ -100,15 +100,16 @@
             return {
                 gameLink:'',
                 tableData: [
-                    {
-                    date: '06-02 20:00:59',
-                    roomID: '1',
-                    players_str: '12,13,14',
-                    playerNum: 5,
-                    name: '随机创建的Demo房间',
-                    status: '游戏中'
-                }
+                //     {
+                //     date: '06-02 20:00:59',
+                //     roomID: '1',
+                //     players_str: '12,13,14',
+                //     playerNum: 5,
+                //     name: '随机创建的Demo房间',
+                //     status: '游戏中'
+                // }
                 ],
+                trueRooms:[],
                 gridData: [
                 ],
                 dialogTableVisible: false,
@@ -118,7 +119,7 @@
                     userNum: '',
                 },
                 formLabelWidth: '120px',
-                room_socket: null
+                room_socket: null,
             }
         },
         created() {
@@ -158,14 +159,31 @@
                             for (var i = 0;i < len;i ++) {
                                 let players = data[i]['usernames']
                                 let players_s = players.length > 0 ? players.join() : '暂无玩家';
-                                this.tableData.push({
-                                    date: data[i]['date'],
-                                    roomID: data[i]['id'],
-                                    players_str: players_s,
-                                    playerNum: data[i]['playerNum'],
-                                    name:  (data[i]['name'])?data[i]['name'] :"未命名房间",
-                                    status: data[i]['status']
+                                if (data[i]['status'] !== 'stop') {
+                                    this.tableData.push({
+                                        date: data[i]['date'],
+                                        roomID: data[i]['id'],
+                                        players_str: players_s,
+                                        playerNum: data[i]['playerNum'],
+                                        maxPlayNum: data[i]['maxPlayNum'],
+                                        name:  (data[i]['name'])?data[i]['name'] :"未命名房间",
+                                        status: data[i]['status'],
+                                        disabled: data[i]['status'] !== 'waiting'
                                     })
+                                    if (data[i]['status'] === 'waiting') {
+                                        this.trueRooms.push({
+                                            date: data[i]['date'],
+                                            roomID: data[i]['id'],
+                                            players_str: players_s,
+                                            playerNum: data[i]['playerNum'],
+                                            maxPlayNum: data[i]['maxPlayNum'],
+                                            name:  (data[i]['name'])?data[i]['name'] :"未命名房间",
+                                            status: data[i]['status'],
+                                            disabled: data[i]['status'] !== 'waiting'
+                                        })
+
+                                    }
+                                }
 
                             }
                         }
@@ -180,13 +198,15 @@
             },
             createRoomAndStartGame() {
                 this.dialogFormVisible = false;
-                api.createRoom({name: this.form.roomName}).then(response => {
+                api.createRoom({name: this.form.roomName, playerNum: this.form.userNum}).then(response => {
                     if (response.status === 200) {
                         if (response.data.code === 200) {
                             // let content = response.data.content;
                             this.$message.success("创建成功,进入游戏...");
                             let data = response.data.content;
                             let roomID = data['id'];
+                            // alert(roomID);
+                            Cookies.set('roomID', roomID);
                             this.startGame(roomID);
                         }
                     } else {
@@ -195,13 +215,13 @@
                 }).catch(err => {
                     console.log(err.response)
                 })
-                this.startGame();
             },
             startGame(roomID) {
                 // window.location.href = this.gameLink + '/?roomID='+roomID;
                 // window.location.replace(this.gameLink + '/?roomID='+roomID);
                 // // TODO 使用 window.open(url)实现边聊天边玩游戏
                 Cookies.set('roomID', roomID);
+                // alert(Cookies.get('roomID'))
                 this.$router.push({
                     path: '/chatRoom'
                 })
@@ -213,14 +233,21 @@
                 })
             },
             startEnterRandomRoom() {
-                this.dialogTableVisible = true;
-                let random_num = (Math.round(Math.random() * this.tableData.length));
-                this.gridData = []
-                this.gridData.push({
-                    roomID: this.tableData[random_num]['roomID'],
-                    roomName: this.tableData[random_num]['name'],
-                    player_str: this.tableData[random_num]['players_str']
-                })
+                if (this.trueRooms.length === 0) {
+                    this.$message("暂未有开放房间，请重新创建");
+                } else {
+                    let random_num = (Math.round(Math.random() * this.trueRooms.length));
+                    if (random_num > 0) {
+                        random_num -= 1;
+                    }
+                    this.gridData = []
+                    this.gridData.push({
+                        roomID: this.trueRooms[random_num]['roomID'],
+                        roomName: this.trueRooms[random_num]['name'],
+                        player_str: this.trueRooms[random_num]['players_str']
+                    })
+                    this.dialogTableVisible = true;
+                }
             },
             enterRandomRoom() {
                 this.dialogTableVisible =false;

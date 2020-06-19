@@ -114,6 +114,7 @@
             z-index: 10;
             border-radius: 10px;
             display: none;
+            overflow-y: scroll;
         }
 
         #btSubmit{
@@ -1650,10 +1651,7 @@
     let scoreGoal = 5;
     let idFont;
     let quizTaking=false;
-    var loader = new THREE.FontLoader();
-    loader.load( '../fonts/helvetiker_bold.typeface.json', function ( font ) {
-        idFont = font;
-    });
+
     function NPC(){
         this.position = new THREE.Vector3(0,25,0);
         this.rotation = new THREE.Vector3(0,0,0);
@@ -1786,7 +1784,7 @@
 
         /*场景效果*/
         //雾化
-        //scene.fog = new THREE.Fog(0x8b0000, 30, 200);
+        scene.fog = new THREE.Fog(0x8b0000, 30, 200);
         /*白细胞漂浮*/
         var geometry = new THREE.BufferGeometry();
         var vertices = [];
@@ -1867,7 +1865,7 @@
 
 
         /* 创建渲染器对象 */
-        renderer = new THREE.WebGLRenderer();
+        renderer = new THREE.WebGLRenderer({ antialias: true,logarithmicDepthBuffer:true });
         renderer.setSize(width, height);//设置渲染区域尺寸
         renderer.setClearColor(0x8b0000, 1); //设置背景颜色
         renderer.domElement.className = 'canvas';
@@ -1880,7 +1878,9 @@
     //
     //定义键盘按键事件
     function setKeyEvents(){
-        window.addEventListener('keydown',function(e){
+        console.log('testing the set key events...')
+        document.addEventListener('keydown',function(e){
+            console.log('testing the add EventListner..')
             if(gameOver)
                 return;
             velocity.x=front.x*25;
@@ -1899,7 +1899,8 @@
                          document.getElementById('mask').style.display='inline';break;
                 default:document.exitPointerLock();console.log("default")
             }
-        });
+        }, false);
+
         window.addEventListener('keyup',function(e){
             if(gameOver)
                 return;
@@ -2177,6 +2178,7 @@
 
                 let sendMsg = {
                     'dropNum':damage,
+                    'roomId': roomId,
                 };
                 stompClient.send("/app/dropHp", {},
                     JSON.stringify(sendMsg));
@@ -2196,6 +2198,7 @@
             for (let j = 0;j<userSet.length;j++){
                 if(userSet[j].id == parseInt(pn,16))
                     mi = userSet[j].modelId;
+                    nickName = userSet[j]['username']
             }
 
             var obj = msg[i];
@@ -2407,8 +2410,8 @@
     let myCount = 0;
 
 
-    // var rootPath = "http://122.51.160.221:8080";
-    var rootPath = "http://localhost:8080";
+    var rootPath = "http://122.51.160.221:8080";
+    // var rootPath = "http://localhost:8080";
     var socket = null;
     var stompClient = null;
     let aaaaa;
@@ -2417,89 +2420,100 @@
     var webMsg;
     // stompClient.debug = true;
     let initialized = false;
-    stompClient.connect({}, function (frame) {
-        webMsg = {
-            'x': parseInt(1),
-            'y': parseInt(1),
-            'z': parseInt(1),
-            'rotation':233,
-            'objectId': playerId,
-            'roomId':roomId
-        };
 
-        stompClient.subscribe('/topic/'+roomId+'/startGame',
-            function(msg){
-                console.log(msg);
-                msg = JSON.parse(msg.body);
-                console.log(msg.content);
 
-                if(msg.content=='all users load finish'){
-                    render();
-                    return;
-                }
-                if(initialized)
-                    return;
-                initialized = true;
-                aaaaa= msg;
-                let modelNum = 0;
-                let playerMsg;
-                packId = msg['content']['pack']['id'];
-                //userset = msg['content']['userSet'];
-                let userSet=msg['content']['userSet'];
-                let user_num=userSet.length;
-                let modelId;
-                console.log("user set is",user_num);
-                for(var i=0;i<user_num;i++){
-                    if(userSet[i]['id']==playerId){
-                        nickName=userSet[i]['username'];
-                        modelId = userSet[i]['modelId'];
-                        break;
+
+
+    initScene();
+    loadFloor();
+    //loadCeil();
+
+    var font_loader = new THREE.FontLoader();
+    font_loader.load( '../fonts/helvetiker_bold.typeface.json', function ( font ) {
+        idFont = font;
+        stompClient.connect({}, function (frame) {
+            webMsg = {
+                'x': parseInt(1),
+                'y': parseInt(1),
+                'z': parseInt(1),
+                'rotation':233,
+                'objectId': playerId,
+                'roomId':roomId
+            };
+
+            stompClient.subscribe('/topic/'+roomId+'/startGame',
+                function(msg){
+                    console.log(msg);
+                    msg = JSON.parse(msg.body);
+                    console.log(msg.content);
+
+                    if(msg.content=='all users load finish'){
+                        render();
+                        return;
                     }
+                    if(initialized)
+                        return;
+                    initialized = true;
+                    aaaaa= msg;
+                    let modelNum = 0;
+                    let playerMsg;
+                    packId = msg['content']['pack']['id'];
+                    //userset = msg['content']['userSet'];
+                    let userSet=msg['content']['userSet'];
+                    let user_num=userSet.length;
+                    let modelId;
+                    console.log("user set is",user_num);
+                    for(var i=0;i<user_num;i++){
+                        if(userSet[i]['id']==playerId){
+                            nickName=userSet[i]['username'];
+                            modelId = userSet[i]['modelId'];
+                            break;
+                        }
+                    }
+
+                    for(let tmp in msg['content']['cellPositionMap']){
+                        if(tmp == playerName)
+                            playerMsg = msg['content']['cellPositionMap'][tmp];
+                        modelNum++;
+                    }
+                    //console.log(msg);
+                    //console.log(playerMsg['x']);
+                    for(let tmp in msg['content']['virusPositionMap']){
+                        modelNum++;
+                    }
+                    if(modelNum==0)
+                        return;
+                    modelLoader = new Loader(modelNum,afterModelInitialized);
+                    console.log(modelLoader);
+                    loadPlayer(playerMsg,modelId);
+                    loadOtherPlayers(msg['content']['cellPositionMap'],userSet);
+                    loadNPC(msg['content']['virusPositionMap']);
                 }
-
-                for(let tmp in msg['content']['cellPositionMap']){
-                    if(tmp == playerName)
-                        playerMsg = msg['content']['cellPositionMap'][tmp];
-                    modelNum++;
+            );
+            stompClient.subscribe('/topic/'+roomId+'/gameOver',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    gameOverController(msg);
                 }
-                //console.log(msg);
-                //console.log(playerMsg['x']);
-                for(let tmp in msg['content']['virusPositionMap']){
-                    modelNum++;
+            );
+            stompClient.send("/app/connectToServer", {},
+                JSON.stringify(webMsg));
+
+            function gameOverController(msg){
+                gameOver = true;
+                document.getElementById('backpack').style.display='none';
+                document.exitPointerLock();
+                document.getElementById('game-over-board').style.display='inline';
+                document.getElementById('mask').style.display='inline';
+
+                console.log(msg);
+                if(msg.content == true){
+                    document.getElementById('victory').style.display='block';
                 }
-                if(modelNum==0)
-                    return;
-                modelLoader = new Loader(modelNum,afterModelInitialized);
-                console.log(modelLoader);
-                loadPlayer(playerMsg,modelId);
-                loadOtherPlayers(msg['content']['cellPositionMap'],userSet);
-                loadNPC(msg['content']['virusPositionMap']);
-            }
-        );
-        stompClient.subscribe('/topic/'+roomId+'/gameOver',
-            function(msg){
-                msg = JSON.parse(msg.body);
-                gameOverController(msg);
-            }
-        );
-        stompClient.send("/app/connectToServer", {},
-            JSON.stringify(webMsg));
+                else{
 
-        function gameOverController(msg){
-            gameOver = true;
-            document.getElementById('backpack').style.display='none';
-            document.exitPointerLock();
-            document.getElementById('game-over-board').style.display='inline';
-            document.getElementById('mask').style.display='inline';
-
-            console.log(msg);
-            if(msg.content == true){
-                document.getElementById('victory').style.display='block';
-            }
-            else{
-
-                document.getElementById('defeat').style.display='block';
-            }
+                    document.getElementById('defeat').style.display='block';
+                }
 //            let sendMsg = {
 //                'answer':'B',
 //                'questionId': msg.content.id
@@ -2507,201 +2521,196 @@
 //            stompClient.send("/app/answerQuestion", {},
 //                JSON.stringify(sendMsg));
 
-        }
-
-        function sleep(ms) {
-            return new Promise(resolve => setTimeout(resolve, ms)
-            )
-        }
-
-        const bulletin = document.getElementById("message");
-        const bulletin_content = document.getElementById("responseMsg");
-
-        function showMessage(type,msg){
-            if(type){
-                bulletin.style.backgroundColor="green";
             }
-            else {
-                bulletin.style.backgroundColor="red";
+
+            function sleep(ms) {
+                return new Promise(resolve => setTimeout(resolve, ms)
+                )
             }
-            bulletin_content.innerText=msg;
-            bulletin.style.display="block";
-            sleep(2000).then(()=>{
-                bulletin.style.display="none";
-            })
-        }
 
+            const bulletin = document.getElementById("message");
+            const bulletin_content = document.getElementById("responseMsg");
 
-        // 收到问题
-        let quizChart=document.getElementById('quiz');
-        let btSubmit=document.getElementById('btSubmit');
-        let currentQuestionId;
-
-        let getQuestionURL= '/topic/'+playerId+'/getRandomQuestion';
-        stompClient.subscribe(getQuestionURL,
-            function(msg){
-                msg = JSON.parse(msg.body);
-                console.log("find question",msg);
-                currentQuestionId=msg.content.id;
-                //fill in question
-                document.getElementById("answerA").innerText=msg.content.choiceA;
-                document.getElementById("answerB").innerText=msg.content.choiceB;
-                document.getElementById("answerC").innerText=msg.content.choiceC;
-                document.getElementById("answerD").innerText=msg.content.choiceD;
-                document.getElementById("question").innerText=msg.content.stem;
-                document.getElementById("keywords").innerText=msg.content.keyword;
-
-                quizTaking=true; //unable screen get pointer lock
-                quizChart.style.display='inline';//display question
-                document.exitPointerLock();
-                quizChart.requestPointerLock();//get focus
-            }
-        );
-
-        //回答问题
-        btSubmit.onclick=function(e){
-            console.log("clicked:");
-            var answers=document.getElementsByName('answer');
-            var answer;
-            for(let i=0; i<answers.length; i++){
-                if(answers[i].checked){
-                    answer=answers[i].value;
+            function showMessage(type,msg){
+                if(type){
+                    bulletin.style.backgroundColor="green";
                 }
+                else {
+                    bulletin.style.backgroundColor="red";
+                }
+                bulletin_content.innerText=msg;
+                bulletin.style.display="block";
+                sleep(2000).then(()=>{
+                    bulletin.style.display="none";
+                })
             }
-            let sendMsg = {
-                'userId':playerId,
-                'answer':answer,
-                'questionId': currentQuestionId
+
+
+            // 收到问题
+            let quizChart=document.getElementById('quiz');
+            let btSubmit=document.getElementById('btSubmit');
+            let currentQuestionId;
+
+            let getQuestionURL= '/topic/'+playerId+'/getRandomQuestion';
+            stompClient.subscribe(getQuestionURL,
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log("find question",msg);
+                    currentQuestionId=msg.content.id;
+                    //fill in question
+                    document.getElementById("answerA").innerText=msg.content.choiceA;
+                    document.getElementById("answerB").innerText=msg.content.choiceB;
+                    document.getElementById("answerC").innerText=msg.content.choiceC;
+                    document.getElementById("answerD").innerText=msg.content.choiceD;
+                    document.getElementById("question").innerText=msg.content.stem;
+                    document.getElementById("keywords").innerText=msg.content.keyword;
+
+                    quizTaking=true; //unable screen get pointer lock
+                    quizChart.style.display='inline';//display question
+                    document.exitPointerLock();
+                    quizChart.requestPointerLock();//get focus
+                }
+            );
+
+            //回答问题
+            btSubmit.onclick=function(e){
+                console.log("clicked:");
+                var answers=document.getElementsByName('answer');
+                var answer;
+                for(let i=0; i<answers.length; i++){
+                    if(answers[i].checked){
+                        answer=answers[i].value;
+                    }
+                }
+                let sendMsg = {
+                    'userId':playerId,
+                    'answer':answer,
+                    'questionId': currentQuestionId
+                };
+                console.log("my answer is:",sendMsg);
+                stompClient.send("/app/answerQuestion", {},
+                    JSON.stringify(sendMsg));
+
+                quizTaking=false;
+                quizChart.style.display='none';
+                document.body.requestPointerLock();
             };
-            console.log("my answer is:",sendMsg);
-            stompClient.send("/app/answerQuestion", {},
-                JSON.stringify(sendMsg));
 
-            quizTaking=false;
-            quizChart.style.display='none';
-            document.body.requestPointerLock();
-        };
-
-        stompClient.subscribe('/topic/'+roomId+'/getRandomKnowledge',
-            function(msg){
-                msg = JSON.parse(msg.body);
-                console.log("find knowledgePoint");
-                showMessage(true,"获得关键线索，请按[b]打开背包查看");
-            }
+            stompClient.subscribe('/topic/'+roomId+'/getRandomKnowledge',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log("find knowledgePoint");
+                    showMessage(true,"获得关键线索，请按[b]打开背包查看");
+                }
 
 
-        );
-        stompClient.subscribe('/topic/'+roomId+'/findCellInfoByType',
-            function(msg){
-                msg = JSON.parse(msg.body);
-                console.log("find info");
-                showMessage(true,"读取到细胞核信息，请按[b]打开背包查看");
-            }
-        );
+            );
+            stompClient.subscribe('/topic/'+roomId+'/findCellInfoByType',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log("find info");
+                    showMessage(true,"读取到细胞核信息，请按[b]打开背包查看");
+                }
+            );
 
-        let correctAnswerURL='/topic/'+playerId+'/correctAnswer';
-        stompClient.subscribe(correctAnswerURL,
-            function(msg){
-                msg = JSON.parse(msg.body);
-                showMessage(true,"回答正确，好像变得更强大了");
-            }
-        );
+            let correctAnswerURL='/topic/'+playerId+'/correctAnswer';
+            stompClient.subscribe(correctAnswerURL,
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    showMessage(true,"回答正确，好像变得更强大了");
+                }
+            );
 
-        let wrongAnswerURL='/topic/'+playerId+'/wrongAnswer';
-        stompClient.subscribe(wrongAnswerURL,
-            function(msg){
-                msg = JSON.parse(msg.body);
-                showMessage(false,"回答错误，就这？");
-            }
-        );
+            let wrongAnswerURL='/topic/'+playerId+'/wrongAnswer';
+            stompClient.subscribe(wrongAnswerURL,
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    showMessage(false,"回答错误，就这？");
+                }
+            );
 
 
 
-        stompClient.subscribe('/topic/'+roomId+'/updatePack',
-            function(msg){
-                msg = JSON.parse(msg.body);
-                console.log("update pack",msg.content);
-                msg = msg.content;//[roomId.toString()];
-                CellInfo.innerHTML='';
-                KnowledgePoints.innerHTML='';
-                var cellInfoSet=msg.cellInfoSet;
-                var cellInfoLength=cellInfoSet.length;
-                var knowledgeSet=msg.knowledgeSet;
-                var knowledgePointLength=knowledgeSet.length;
-                var choiceQuestionSet = msg.choiceQuestionSet;
-                var choiceQuestionLength = choiceQuestionSet.length;
-                for(var i=0;i<cellInfoLength;i++){
-                    //console.log("info:",cellInfoSet[i].info);
-                    let insert=document.createElement("p");
-                    insert.innerText=cellInfoSet[i].info;
-                    CellInfo.appendChild(insert);
+            stompClient.subscribe('/topic/'+roomId+'/updatePack',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log("update pack",msg.content);
+                    msg = msg.content;//[roomId.toString()];
+                    CellInfo.innerHTML='';
+                    KnowledgePoints.innerHTML='';
+                    var cellInfoSet=msg.cellInfoSet;
+                    var cellInfoLength=cellInfoSet.length;
+                    var knowledgeSet=msg.knowledgeSet;
+                    var knowledgePointLength=knowledgeSet.length;
+                    var choiceQuestionSet = msg.choiceQuestionSet;
+                    var choiceQuestionLength = choiceQuestionSet.length;
+                    for(var i=0;i<cellInfoLength;i++){
+                        //console.log("info:",cellInfoSet[i].info);
+                        let insert=document.createElement("p");
+                        insert.innerText=cellInfoSet[i].info;
+                        CellInfo.appendChild(insert);
+
+                    }
+                    for(i=0;i<knowledgePointLength;i++){
+                        //console.log("knowledge:",knowledgeSet[i].content);
+                        let insert=document.createElement("p");
+                        insert.innerText=knowledgeSet[i].content;
+                        KnowledgePoints.appendChild(insert);
+                    }
+                    process=(choiceQuestionLength+knowledgePointLength+cellInfoLength)/scoreGoal*100;
+                    if(process>100)
+                        process = 100;
+                    var process_css=process+"%";
+                    document.documentElement.style.setProperty('--process',process_css);
 
                 }
-                for(i=0;i<knowledgePointLength;i++){
-                    //console.log("knowledge:",knowledgeSet[i].content);
-                    let insert=document.createElement("p");
-                    insert.innerText=knowledgeSet[i].content;
-                    KnowledgePoints.appendChild(insert);
+            );
+
+            stompClient.subscribe('/topic/'+roomId+'/updateHp',
+                function(msg){
+                    msg = JSON.parse(msg.body);
+                    console.log(msg);
+                    vitality=msg.content;
+                    var vitality_css=vitality+"%";
+                    document.documentElement.style.setProperty('--vitality',vitality_css);
                 }
-                process=(choiceQuestionLength+knowledgePointLength+cellInfoLength)/scoreGoal*100;
-                if(process>100)
-                    process = 100;
-                var process_css=process+"%";
-                document.documentElement.style.setProperty('--process',process_css);
-
-            }
-        );
-
-        stompClient.subscribe('/topic/'+roomId+'/updateHp',
-            function(msg){
-                msg = JSON.parse(msg.body);
-                console.log(msg);
-                vitality=msg.content;
-                var vitality_css=vitality+"%";
-                document.documentElement.style.setProperty('--vitality',vitality_css);
-            }
-        );
+            );
 
 
 
-        stompClient.subscribe('/topic/'+roomId+'/updateCellAndVirus',
-            function(msg){
-                //console.log(msg.body);
-                //console.log(webMsg);
-                msg = JSON.parse(msg.body);
-                console.log(msg);
-                let modelNum = 0;
-                let playerMsg;
-                let time = (new Date()).valueOf();
-                timeGap = time-timer;
-                timer = time;
+            stompClient.subscribe('/topic/'+roomId+'/updateCellAndVirus',
+                function(msg){
+                    //console.log(msg.body);
+                    //console.log(webMsg);
+                    msg = JSON.parse(msg.body);
+                    console.log(msg);
+                    let modelNum = 0;
+                    let playerMsg;
+                    let time = (new Date()).valueOf();
+                    timeGap = time-timer;
+                    timer = time;
 
-                for(let tmp in msg['content']['cellPositionMap']){
-                    if(tmp == playerName)
-                        continue;
-                    let p = msg['content']['cellPositionMap'][tmp];
-                    players.get(tmp).nextPosition.set(p['x'],p['y'],p['z']);
-                    players.get(tmp).nextRotation.set(0,p['rotation'],0);
-                    players.get(tmp).startMoving = true;
+                    for(let tmp in msg['content']['cellPositionMap']){
+                        if(tmp == playerName)
+                            continue;
+                        let p = msg['content']['cellPositionMap'][tmp];
+                        players.get(tmp).nextPosition.set(p['x'],p['y'],p['z']);
+                        players.get(tmp).nextRotation.set(0,p['rotation'],0);
+                        players.get(tmp).startMoving = true;
 
+                    }
+                    //console.log(msg);
+                    //console.log(playerMsg['x']);
+                    for(let tmp in msg['content']['virusPositionMap']) {
+                        let p = msg['content']['virusPositionMap'][tmp];
+                        npcs.get(tmp).nextPosition.set(p['x'], p['y'], p['z']);
+                        npcs.get(tmp).nextRotation.set(p['rotation'] / Math.PI,p['rotationY'] /Math.PI,p['rotationZ']/Math.PI);
+                        npcs.get(tmp).startMoving = true;
+                    }
                 }
-                //console.log(msg);
-                //console.log(playerMsg['x']);
-                for(let tmp in msg['content']['virusPositionMap']) {
-                    let p = msg['content']['virusPositionMap'][tmp];
-                    npcs.get(tmp).nextPosition.set(p['x'], p['y'], p['z']);
-                    npcs.get(tmp).nextRotation.set(p['rotation'] / Math.PI,p['rotationY'] /Math.PI,p['rotationZ']/Math.PI);
-                    npcs.get(tmp).startMoving = true;
-                }
-            }
-        );
+            );
+        });
     });
-
-
-
-    initScene();
-    loadFloor();
-    loadCeil();
 
 
 

@@ -1,6 +1,5 @@
 <!--            action="https://jsonplaceholder.typicode.com/posts/"-->
 <!--:http-request="upLoad"-->
-
 <template>
     <div id="information_table" :data="information_data" :rules="rules">
         <el-row>
@@ -87,8 +86,6 @@
                         <el-option label="神经细胞" value="3"></el-option>
                         <el-option label="红血球" value="4"></el-option>
                         <el-option label="抗体" value="5"></el-option>
-                        <el-option label="病毒" value="6"></el-option>
-                        <el-option label="肿瘤细胞" value="7"></el-option>
                     </el-select>
                 </div>
             </el-col>
@@ -109,9 +106,6 @@
             <el-button v-show="!edit" type="primary" icon @click="startEdit()">编辑信息</el-button>
         </el-row>
     </div>
-
-
-
 </template>
 
 <script>
@@ -123,6 +117,7 @@
     export default {
         name: "Information",
         data() {
+
             var checkFullName = (rule, value, callback) => {
                 if (!value) {
                     return callback(new Error('用户名不能为空！'));
@@ -174,6 +169,7 @@
                     newPassword: '',
                     Model: '',
                 },
+
                 model_name : [
                     'B细胞',
                     '血小板',
@@ -181,8 +177,6 @@
                     '神经细胞',
                     '红血球',
                     '抗体',
-                    '病毒',
-                    '肿瘤细胞'
                 ],
                 edit: true,
                 rules: {
