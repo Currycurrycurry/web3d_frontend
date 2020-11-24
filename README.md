@@ -1,5 +1,5 @@
 # web3d_frontend
-2020《高级web》课程Project的项目前端部分代码，使用Vue/Vuex/Vue-router搭建。
+2020《工作细胞》Project的项目前端部分代码，使用Vue/Vuex/Vue-router搭建。
 
 ## 文件目录
 
